@@ -8,7 +8,6 @@
 
 ### Phase 1 - サーバ (server/)
 
-- [ ] Phase1-5 管理画面 `/admin` (履歴一覧 + 詳細)
 - [ ] Phase1-6 Dockerfile + docker-compose.yml
 - [ ] Phase1-7 curl とブラウザで疎通確認
 

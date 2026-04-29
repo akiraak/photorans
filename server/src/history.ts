@@ -70,3 +70,37 @@ export function saveHistory(input: SaveHistoryInput): SaveHistoryResult {
 
   return { id, createdAt, imagePath };
 }
+
+export interface HistoryRecord {
+  id: string;
+  createdAt: string;
+  imagePath: string;
+  imageMimeType: string;
+  originalText: string;
+  translatedText: string;
+  model: string;
+}
+
+const listStmt = db.prepare(`
+  SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model
+  FROM history
+  ORDER BY createdAt DESC
+`);
+
+const getStmt = db.prepare(`
+  SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model
+  FROM history
+  WHERE id = ?
+`);
+
+export function listHistory(): HistoryRecord[] {
+  return listStmt.all() as HistoryRecord[];
+}
+
+export function getHistoryById(id: string): HistoryRecord | null {
+  return (getStmt.get(id) as HistoryRecord | undefined) ?? null;
+}
+
+export function resolveImageAbsolutePath(imagePath: string): string {
+  return join(dataDir, imagePath);
+}
