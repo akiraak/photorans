@@ -1,2 +1,9 @@
 vibeboard/node_modules/
 .claude/settings.local.json
+
+# server
+server/node_modules/
+server/dist/
+server/data/
+server/.env
+server/.env.local
