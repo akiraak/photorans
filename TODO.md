@@ -8,8 +8,7 @@
 
 ### Phase 1 - サーバ (server/)
 
-- [ ] Phase1-6 Dockerfile + docker-compose.yml
-- [ ] Phase1-7 curl とブラウザで疎通確認
+- [ ] Phase1-7 curl とブラウザで疎通確認 (`npm run dev`)
 
 ### Phase 2 - クライアント (client/)
 
@@ -22,7 +21,7 @@
 
 ### Phase 3 - 統合・実機確認
 
-- [ ] Phase3-1 docker compose up → LAN から `/translate` と `/admin` 到達
+- [ ] Phase3-1 サーバ起動 → LAN から `/translate` と `/admin` 到達
 - [ ] Phase3-2 iPhone Dev Client で撮影 → 一覧 → 詳細まで通す
 - [ ] Phase3-3 サンプル画像 5〜10 種で品質確認
 

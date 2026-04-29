@@ -7,7 +7,9 @@
 
 ## ゴール
 
-Akira さんの iPhone を Expo Dev Client で起動し、自宅 LAN 内の Linux PC (Docker) のサーバ経由で **撮影 → 文字起こし → 翻訳 → 端末側に保存・一覧** が完結する状態にする。サーバ側にも管理画面で処理履歴を確認できる。
+Akira さんの iPhone を Expo Dev Client で起動し、自宅 LAN 内の Linux PC 上で動かすサーバ経由で **撮影 → 文字起こし → 翻訳 → 端末側に保存・一覧** が完結する状態にする。サーバ側にも管理画面で処理履歴を確認できる。
+
+> 本プランの範囲はアプリ実装まで。コンテナ化 / デプロイは別プロジェクト（デプロイシステム）で管理する。
 
 ## やること / やらないこと
 
@@ -20,7 +22,7 @@ Akira さんの iPhone を Expo Dev Client で起動し、自宅 LAN 内の Linu
 - サーバ:
   - 画像を受け取り、Claude Sonnet 4.6 で OCR + 英→日翻訳して JSON で返す
   - 処理履歴を保存し、ブラウザで参照できる管理画面
-- Linux PC 上の Docker Compose で API + 管理画面を起動
+- Linux PC 上でサーバ (`npm run dev` 等) を起動し、API + 管理画面を提供
 - LAN 内 IP 直指定でクライアントから接続
 
 ### やらない (MVP OUT — 次フェーズ以降)
@@ -32,6 +34,7 @@ Akira さんの iPhone を Expo Dev Client で起動し、自宅 LAN 内の Linu
 - ストア提出向けアセット
 - 外部公開トンネル / DDNS
 - ESLint / Prettier / テスト整備 (動くまで優先)
+- コンテナ化 / デプロイ構成 (Dockerfile, compose, CI/CD 等は別プロジェクトで管理)
 
 ## アーキテクチャ
 
@@ -42,7 +45,7 @@ Akira さんの iPhone を Expo Dev Client で起動し、自宅 LAN 内の Linu
    └─ 詳細: 画像 + 原文 + 訳文
         │
         ▼
-[自宅 Linux PC / docker compose]
+[自宅 Linux PC]
    └── api (Node.js + TypeScript + Hono)
         ├── POST /translate         … OCR + 翻訳して JSON 返却 + 履歴保存
         ├── GET  /admin             … 履歴一覧 (HTML)
@@ -58,7 +61,7 @@ Akira さんの iPhone を Expo Dev Client で起動し、自宅 LAN 内の Linu
 ```
 photorans/
 ├── client/         # Expo React Native アプリ
-├── server/         # Node.js API + 管理画面 + Dockerfile
+├── server/         # Node.js API + 管理画面
 ├── docs/plans/
 ├── vibeboard/
 ├── CLAUDE.md
@@ -77,8 +80,9 @@ photorans/
 3. **Phase1-3 Claude Sonnet 4.6 呼び出し実装** — Anthropic SDK で画像入力 + OCR/翻訳プロンプトを実装
 4. **Phase1-4 履歴保存 (SQLite)** — `/translate` 成功時に `id, createdAt, imagePath, originalText, translatedText` を保存
 5. **Phase1-5 管理画面 `/admin`** — 履歴一覧 (新しい順) と詳細 (画像 + 原文 + 訳文) を素の HTML で表示
-6. **Phase1-6 Dockerfile + docker-compose.yml** — Node 20 ベース、`./data` を bind mount、ポート 3000 公開、`.env` で `ANTHROPIC_API_KEY` 注入
-7. **Phase1-7 疎通確認** — `curl -F image=@sample.jpg http://localhost:3000/translate` と、ブラウザで `/admin` が見えること
+6. **Phase1-7 疎通確認** — ホストで `npm run dev` 起動 → `curl -F image=@sample.jpg http://localhost:3000/translate` と、ブラウザで `/admin` が見えること
+
+> Phase1-6 (Dockerfile + docker-compose.yml) はデプロイシステム側で管理するため、本プロジェクトのスコープから外す。番号は履歴維持のため欠番のままとする。
 
 ### Phase 2: クライアント (client/)
 
@@ -91,7 +95,7 @@ photorans/
 
 ### Phase 3: 統合・実機確認
 
-1. **Phase3-1** Linux PC で `docker compose up` → LAN から `/translate` と `/admin` に到達できること
+1. **Phase3-1** Linux PC でサーバ起動 → LAN から `/translate` と `/admin` に到達できること
 2. **Phase3-2** iPhone Dev Client で撮影 → 一覧に保存 → 詳細表示まで通ること
 3. **Phase3-3** サンプル画像 5〜10 種で品質確認 (郵便 / 医療 / 契約 / 日常 / 交通案内)
 
