@@ -8,7 +8,6 @@
 
 ### Phase 2 - クライアント (client/)
 
-- [ ] Phase2-5 詳細画面 (写真 + 原文 + 訳文)
 - [ ] Phase2-6 API クライアント (`EXPO_PUBLIC_API_URL` で LAN IP)
 
 ### Phase 3 - 統合・実機確認
