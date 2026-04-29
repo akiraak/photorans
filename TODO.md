@@ -8,7 +8,6 @@
 
 ### Phase 1 - サーバ (server/)
 
-- [ ] Phase1-2 `/translate` エンドポイント (multipart 画像 → JSON)
 - [ ] Phase1-3 Claude Sonnet 4.6 呼び出し実装 (Anthropic SDK)
 - [ ] Phase1-4 履歴保存 (SQLite)
 - [ ] Phase1-5 管理画面 `/admin` (履歴一覧 + 詳細)
