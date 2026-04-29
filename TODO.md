@@ -6,10 +6,6 @@
 
 ## MVP (ローカル実行版・最小構成) — プラン: [docs/plans/mvp-scope.md](docs/plans/mvp-scope.md)
 
-### Phase 2 - クライアント (client/)
-
-- [ ] Phase2-6 API クライアント (`EXPO_PUBLIC_API_URL` で LAN IP)
-
 ### Phase 3 - 統合・実機確認
 
 - [ ] Phase3-1 サーバ起動 → LAN から `/translate` と `/admin` 到達

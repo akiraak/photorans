@@ -4,11 +4,16 @@ export type TranslateResponse = {
   model: string;
 };
 
-const DEFAULT_API_URL = 'http://localhost:3000';
+const REQUEST_TIMEOUT_MS = 60_000;
 
-function getApiUrl(): string {
+function getApiBaseUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
-  return url && url.length > 0 ? url : DEFAULT_API_URL;
+  if (!url || url.length === 0) {
+    throw new Error(
+      'EXPO_PUBLIC_API_URL が未設定です。client/.env に LAN IP を指定して Metro を再起動してください。',
+    );
+  }
+  return url.replace(/\/+$/, '');
 }
 
 export async function translatePhoto(params: {
@@ -23,10 +28,24 @@ export async function translatePhoto(params: {
     type: params.mimeType,
   } as unknown as Blob);
 
-  const res = await fetch(`${getApiUrl()}/translate`, {
-    method: 'POST',
-    body: formData,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBaseUrl()}/translate`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error(`タイムアウト (${REQUEST_TIMEOUT_MS / 1000}s)`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     let detail = '';
