@@ -8,7 +8,6 @@
 
 ### Phase 2 - クライアント (client/)
 
-- [ ] Phase2-2 ナビゲーション (Bottom Tabs + Stack)
 - [ ] Phase2-3 カメラ画面 (撮影 → API 送信 → ローカル DB 保存)
 - [ ] Phase2-4 写真一覧画面 (expo-sqlite から新着順)
 - [ ] Phase2-5 詳細画面 (写真 + 原文 + 訳文)
