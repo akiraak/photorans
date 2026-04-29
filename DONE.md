@@ -7,3 +7,4 @@
 - 2026-04-29: Phase1-1 server/ 初期化 (Node.js 22 + TypeScript + Hono の最小セット、`npm run dev` で hello world 確認)
 - 2026-04-29: Phase1-2 `POST /translate` エンドポイント (multipart 画像受付 + バリデーション + `{originalText, translatedText, model}` 形式の JSON 返却。Claude 呼び出しは Phase1-3 で実装するためスタブ)
 - 2026-04-29: Phase1-3 Claude Sonnet 4.6 呼び出し実装 (Anthropic SDK + base64 画像入力 + structured output で OCR/英→日翻訳。`ANTHROPIC_API_KEY` 環境変数が必要)
+- 2026-04-29: Phase1-4 履歴保存 (SQLite) (`better-sqlite3` で `${DATA_DIR}/history.db` を初期化、画像本体は `${DATA_DIR}/images/<uuid>.<ext>` に保存。`/translate` 成功時に `id, createdAt, imagePath, imageMimeType, originalText, translatedText, model` を記録。保存失敗はログ出力のみで応答自体はブロックしない)

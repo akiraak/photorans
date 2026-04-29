@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import Anthropic from '@anthropic-ai/sdk';
+import { saveHistory } from './history.js';
 
 const app = new Hono();
 
@@ -42,7 +43,9 @@ app.post('/translate', async (c) => {
     return c.json({ error: `image too large (max ${MAX_IMAGE_BYTES} bytes)` }, 413);
   }
 
-  const base64 = Buffer.from(await image.arrayBuffer()).toString('base64');
+  const imageBytes = Buffer.from(await image.arrayBuffer());
+  const base64 = imageBytes.toString('base64');
+  const imageMimeType = image.type as SupportedImageType;
 
   let response;
   try {
@@ -78,7 +81,7 @@ app.post('/translate', async (c) => {
               type: 'image',
               source: {
                 type: 'base64',
-                media_type: image.type as SupportedImageType,
+                media_type: imageMimeType,
                 data: base64,
               },
             },
@@ -121,6 +124,18 @@ app.post('/translate', async (c) => {
   if (typeof parsed.originalText !== 'string' || typeof parsed.translatedText !== 'string') {
     console.error('model output missing required fields:', parsed);
     return c.json({ error: 'unexpected response from model' }, 502);
+  }
+
+  try {
+    saveHistory({
+      imageBytes,
+      imageMimeType,
+      originalText: parsed.originalText,
+      translatedText: parsed.translatedText,
+      model: MODEL_ID,
+    });
+  } catch (err) {
+    console.error('failed to save translation history:', err);
   }
 
   return c.json({
