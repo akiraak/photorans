@@ -8,7 +8,6 @@
 
 ### Phase 3 - 統合・実機確認
 
-- [ ] Phase3-1 サーバ起動 → LAN から `/translate` と `/admin` 到達
 - [ ] Phase3-2 iPhone Dev Client で撮影 → 一覧 → 詳細まで通す
 - [ ] Phase3-3 サンプル画像 5〜10 種で品質確認
 
