@@ -8,7 +8,6 @@
 
 ### Phase 2 - クライアント (client/)
 
-- [ ] Phase2-1 Expo 初期化 (Dev Client / TypeScript)
 - [ ] Phase2-2 ナビゲーション (Bottom Tabs + Stack)
 - [ ] Phase2-3 カメラ画面 (撮影 → API 送信 → ローカル DB 保存)
 - [ ] Phase2-4 写真一覧画面 (expo-sqlite から新着順)
