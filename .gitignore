@@ -7,3 +7,6 @@ server/dist/
 server/data/
 server/.env
 server/.env.local
+
+# debug / sample images (端末固有)
+debug-ss/

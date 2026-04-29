@@ -6,10 +6,6 @@
 
 ## MVP (ローカル実行版・最小構成) — プラン: [docs/plans/mvp-scope.md](docs/plans/mvp-scope.md)
 
-### Phase 1 - サーバ (server/)
-
-- [ ] Phase1-7 curl とブラウザで疎通確認 (`npm run dev`)
-
 ### Phase 2 - クライアント (client/)
 
 - [ ] Phase2-1 Expo 初期化 (Dev Client / TypeScript)
