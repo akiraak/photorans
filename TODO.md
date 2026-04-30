@@ -1,6 +1,16 @@
 # TODO
 
-- [ ] iOSネイティブで作り直す
+- [ ] iOSネイティブで作り直す [plan](docs/plans/ios-native-rewrite.md)
+  - [ ] Phase1 Xcode プロジェクト基盤 + Bitrise 接続
+    - [x] Step1 XcodeGen で `ios/Photorans.xcodeproj` 雛形生成 (`project.yml` のみ git 管理、`.xcodeproj` は CI で生成)
+    - [ ] Step2 Bitrise セットアップ (アカウント接続 + `bitrise.yml` + `primary` Workflow で `xcodebuild build` 緑化)
+  - [ ] Phase2 カメラ画面 (AVFoundation)
+  - [ ] Phase3 ネットワーク層 (`/translate` 連携)
+  - [ ] Phase4 ローカル DB (SwiftData / Core Data)
+  - [ ] Phase5 履歴一覧 + 詳細画面
+  - [ ] Phase6 Bitrise コード署名 + TestFlight 提出 Workflow
+  - [ ] Phase7 実機 TestFlight 動作確認
+  - [ ] Phase8 旧 RN クライアントの撤去
 - [ ] TestFlight での実行 [plan](docs/plans/testflight.md)
   - [x] Phase4-1 production プロファイルと API URL 切替
   - [x] Phase4-2 App Store Connect アプリレコード作成

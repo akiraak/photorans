@@ -10,3 +10,15 @@ server/.env.local
 
 # debug / sample images (端末固有)
 debug-ss/
+
+# iOS / Xcode (XcodeGen で生成・CI ビルド成果物)
+ios/Photorans.xcodeproj/
+ios/Photorans.xcworkspace/
+ios/build/
+ios/DerivedData/
+ios/.build/
+ios/Pods/
+ios/*.ipa
+ios/*.dSYM
+ios/*.dSYM.zip
+.DS_Store
