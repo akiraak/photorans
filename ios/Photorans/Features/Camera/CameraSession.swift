@@ -69,9 +69,12 @@ final class CameraSession: @unchecked Sendable {
                 settings.photoQualityPrioritization = .balanced
 
                 let delegateID = UUID()
-                let delegate = PhotoCaptureDelegate { [weak self] result in
-                    self?.sessionQueue.async {
-                        self?.pendingDelegates.removeValue(forKey: delegateID)
+                // self は strong capture。撮影完了 → pendingDelegates から削除 → delegate 解放
+                // → クロージャ解放、で retain cycle は自然に解ける。
+                // [weak self] にすると Swift 6 strict concurrency が weak var の再キャプチャを拒否する。
+                let delegate = PhotoCaptureDelegate { [self] result in
+                    sessionQueue.async {
+                        self.pendingDelegates.removeValue(forKey: delegateID)
                     }
                     continuation.resume(with: result)
                 }
