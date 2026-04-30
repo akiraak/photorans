@@ -3,7 +3,7 @@ import SwiftUI
 struct RootView: View {
     var body: some View {
         TabView {
-            CameraTabView()
+            CameraView()
                 .tabItem {
                     Label("カメラ", systemImage: "camera")
                 }
@@ -12,21 +12,6 @@ struct RootView: View {
                 .tabItem {
                     Label("履歴", systemImage: "list.bullet")
                 }
-        }
-    }
-}
-
-private struct CameraTabView: View {
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.tint)
-                Text("カメラ (Phase2 で実装)")
-                    .font(.title2)
-            }
-            .navigationTitle("カメラ")
         }
     }
 }

@@ -6,6 +6,9 @@
     - [x] Step2 WSL2 で XcodeGen を Linux ビルド + `ios/Photorans.xcodeproj` 生成・コミット
     - [x] Step3 Bitrise アカウント接続 (Hobby plan) + Configuration YAML をリポジトリ側に切替 + `primary` Workflow を Web UI 手動起動 → 緑化確認 (`xcode-build-for-simulator@3` に bump で解決)
   - [ ] Phase2 カメラ画面 (AVFoundation)
+    - [x] Step1 AVCaptureSession セットアップ + プレビュー表示 (撮影なし)
+    - [ ] Step2 撮影 + ローカル保存 (JPEG + EXIF orientation)
+    - [ ] Step3 サムネ表示 + フォーカス改善 (近接 AF / タップ AF)
   - [ ] Phase3 ネットワーク層 (`/translate` 連携)
   - [ ] Phase4 ローカル DB (SwiftData / Core Data)
   - [ ] Phase5 履歴一覧 + 詳細画面
