@@ -5,6 +5,7 @@ enum CameraError: Error, LocalizedError {
     case notConfigured
     case noVideoConnection
     case noPhotoData
+    case noDevice
 
     var errorDescription: String? {
         switch self {
@@ -14,6 +15,8 @@ enum CameraError: Error, LocalizedError {
             return "カメラ出力の接続が見つかりません"
         case .noPhotoData:
             return "撮影データを取得できませんでした"
+        case .noDevice:
+            return "カメラデバイスが見つかりません"
         }
     }
 }
@@ -28,6 +31,7 @@ final class CameraSession: @unchecked Sendable {
     private let sessionQueue = DispatchQueue(label: "com.akiraak.photorans.camera.session")
     private let logger = Logger(subsystem: "com.akiraak.photorans", category: "CameraSession")
     private var isConfigured = false
+    private var device: AVCaptureDevice?
     private var pendingDelegates: [UUID: PhotoCaptureDelegate] = [:]
 
     func start() {
@@ -84,6 +88,33 @@ final class CameraSession: @unchecked Sendable {
         }
     }
 
+    /// プレビュー上のタップ位置 (`AVCaptureVideoPreviewLayer.captureDevicePointConverted` で
+    /// 既に device 座標 (0...1) に変換済み) にフォーカスを合わせる。
+    func focus(at devicePoint: CGPoint) {
+        sessionQueue.async { [self] in
+            guard isConfigured, let device else { return }
+            do {
+                try device.lockForConfiguration()
+                defer { device.unlockForConfiguration() }
+
+                if device.isFocusPointOfInterestSupported {
+                    device.focusPointOfInterest = devicePoint
+                }
+                if device.isFocusModeSupported(.autoFocus) {
+                    device.focusMode = .autoFocus
+                }
+                if device.isExposurePointOfInterestSupported {
+                    device.exposurePointOfInterest = devicePoint
+                }
+                if device.isExposureModeSupported(.autoExpose) {
+                    device.exposureMode = .autoExpose
+                }
+            } catch {
+                logger.error("focus lockForConfiguration 失敗: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
     private func configureIfNeeded() {
         guard !isConfigured else { return }
         session.beginConfiguration()
@@ -114,7 +145,31 @@ final class CameraSession: @unchecked Sendable {
         }
         session.addOutput(photoOutput)
 
+        configureFocus(on: device)
+
+        self.device = device
         isConfigured = true
+    }
+
+    /// 近接被写体 (テキスト撮影想定) に強い AF を初期設定する。
+    /// `.near` は OCR 用途で重要なので、サポートされない端末でも他の設定だけは適用する。
+    private func configureFocus(on device: AVCaptureDevice) {
+        do {
+            try device.lockForConfiguration()
+            defer { device.unlockForConfiguration() }
+
+            if device.isFocusModeSupported(.continuousAutoFocus) {
+                device.focusMode = .continuousAutoFocus
+            }
+            if device.isAutoFocusRangeRestrictionSupported {
+                device.autoFocusRangeRestriction = .near
+            }
+            if device.isExposureModeSupported(.continuousAutoExposure) {
+                device.exposureMode = .continuousAutoExposure
+            }
+        } catch {
+            logger.error("初期 focus 設定失敗: \(error.localizedDescription, privacy: .public)")
+        }
     }
 }
 

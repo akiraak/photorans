@@ -11,6 +11,7 @@ final class CameraViewModel {
     var isCapturing: Bool = false
     var lastError: String?
     var lastSavedURL: URL?
+    var lastThumbnail: UIImage?
 
     private var orientationObserver: NSObjectProtocol?
 
@@ -47,9 +48,17 @@ final class CameraViewModel {
             let data = try await camera.capturePhoto(rotationAngle: angle)
             let url = try PhotoStorage.save(jpegData: data)
             lastSavedURL = url
+            lastThumbnail = UIImage(data: data)
         } catch {
             lastError = error.localizedDescription
         }
+    }
+
+    /// プレビュー上タップで AF 点を切り替える。`devicePoint` は
+    /// `AVCaptureVideoPreviewLayer.captureDevicePointConverted` で得た 0...1 座標。
+    func focus(at devicePoint: CGPoint) {
+        guard permissionStatus == .authorized else { return }
+        camera.focus(at: devicePoint)
     }
 
     // MARK: - Orientation

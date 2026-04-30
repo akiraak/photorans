@@ -4,20 +4,31 @@ import SwiftUI
 struct CameraView: View {
     @State private var viewModel = CameraViewModel()
     @State private var errorAlertMessage: String?
+    @State private var focusReticle: FocusReticleState?
 
     var body: some View {
         ZStack {
             Color.black
                 .ignoresSafeArea()
 
-            CameraPreviewView(session: viewModel.camera.session)
-                .ignoresSafeArea()
+            CameraPreviewView(session: viewModel.camera.session) { layerPoint, devicePoint in
+                viewModel.focus(at: devicePoint)
+                showFocusReticle(at: layerPoint)
+            }
+            .ignoresSafeArea()
+
+            if let reticle = focusReticle {
+                FocusReticleView()
+                    .position(reticle.point)
+                    .id(reticle.id)
+                    .transition(.opacity)
+            }
 
             switch viewModel.permissionStatus {
             case .denied, .restricted:
                 permissionDeniedOverlay
             case .authorized:
-                shutterControl
+                bottomControls
             default:
                 EmptyView()
             }
@@ -48,13 +59,16 @@ struct CameraView: View {
         )
     }
 
-    private var shutterControl: some View {
+    private var bottomControls: some View {
         VStack {
             Spacer()
-            HStack {
-                Spacer()
+            ZStack {
                 shutterButton
-                Spacer()
+                HStack {
+                    thumbnailView
+                    Spacer()
+                }
+                .padding(.horizontal, 28)
             }
             .padding(.bottom, 40)
         }
@@ -82,6 +96,24 @@ struct CameraView: View {
         .accessibilityLabel("撮影")
     }
 
+    @ViewBuilder
+    private var thumbnailView: some View {
+        if let image = viewModel.lastThumbnail {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white, lineWidth: 1.5)
+                )
+                .accessibilityLabel("直前の撮影")
+        } else {
+            Color.clear.frame(width: 56, height: 56)
+        }
+    }
+
     private var permissionDeniedOverlay: some View {
         VStack(spacing: 12) {
             Image(systemName: "camera.fill")
@@ -99,6 +131,41 @@ struct CameraView: View {
         .padding(24)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .padding()
+    }
+
+    private func showFocusReticle(at point: CGPoint) {
+        let state = FocusReticleState(point: point)
+        focusReticle = state
+        Task {
+            try? await Task.sleep(for: .milliseconds(900))
+            if focusReticle?.id == state.id {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    focusReticle = nil
+                }
+            }
+        }
+    }
+}
+
+private struct FocusReticleState: Equatable {
+    let id = UUID()
+    let point: CGPoint
+}
+
+private struct FocusReticleView: View {
+    @State private var scale: CGFloat = 1.4
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .stroke(Color.yellow, lineWidth: 1.5)
+            .frame(width: 72, height: 72)
+            .scaleEffect(scale)
+            .shadow(color: .black.opacity(0.4), radius: 2)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    scale = 1.0
+                }
+            }
     }
 }
 

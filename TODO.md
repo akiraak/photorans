@@ -8,7 +8,7 @@
   - [ ] Phase2 カメラ画面 (AVFoundation)
     - [x] Step1 AVCaptureSession セットアップ + プレビュー表示 (撮影なし)
     - [x] Step2 撮影 + ローカル保存 (JPEG + EXIF orientation)
-    - [ ] Step3 サムネ表示 + フォーカス改善 (近接 AF / タップ AF)
+    - [x] Step3 サムネ表示 + フォーカス改善 (近接 AF / タップ AF)
   - [ ] Phase3 ネットワーク層 (`/translate` 連携)
   - [ ] Phase4 ローカル DB (SwiftData / Core Data)
   - [ ] Phase5 履歴一覧 + 詳細画面
