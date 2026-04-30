@@ -11,8 +11,9 @@ server/.env.local
 # debug / sample images (端末固有)
 debug-ss/
 
-# iOS / Xcode (XcodeGen で生成・CI ビルド成果物)
-ios/Photorans.xcodeproj/
+# iOS / Xcode
+# .xcodeproj は XcodeGen で生成するが、Bitrise 接続を安全に通すため git 管理する
+# (再生成手順は ios/README.md 参照)
 ios/Photorans.xcworkspace/
 ios/build/
 ios/DerivedData/
@@ -21,4 +22,7 @@ ios/Pods/
 ios/*.ipa
 ios/*.dSYM
 ios/*.dSYM.zip
+# Xcode のユーザ固有設定
+ios/Photorans.xcodeproj/xcuserdata/
+ios/Photorans.xcodeproj/project.xcworkspace/xcuserdata/
 .DS_Store

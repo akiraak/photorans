@@ -22,29 +22,13 @@ trigger_map: []
 workflows:
   primary:
     description: |-
-      XcodeGen で .xcodeproj を生成し、iPhone 16 シミュレータ向けに
-      未署名ビルドする。アーカイブ・署名は行わない (Phase6 で release を追加)。
+      リポジトリにコミット済みの ios/Photorans.xcodeproj を使い、
+      iPhone 16 シミュレータ向けに未署名ビルドする。
+      アーカイブ・署名は行わない (Phase6 で release を追加)。
+      .xcodeproj は WSL2 上の XcodeGen Linux ビルドで再生成する想定で、
+      CI 側では生成ステップを持たない。
     steps:
     - git-clone@8: {}
-    - script@1:
-        title: Install XcodeGen
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euxo pipefail
-            if ! command -v xcodegen >/dev/null 2>&1; then
-              brew install xcodegen
-            fi
-            xcodegen --version
-    - script@1:
-        title: Generate Xcode project
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euxo pipefail
-            cd ios
-            xcodegen generate
-            ls -la Photorans.xcodeproj
     - xcode-build-for-simulator@0:
         inputs:
         - project_path: $BITRISE_PROJECT_PATH

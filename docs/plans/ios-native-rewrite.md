@@ -2,7 +2,7 @@
 
 photorans のクライアントを Expo + React Native + `react-native-vision-camera` 構成から、Swift によるフルネイティブ iOS アプリに作り直す。サーバ (`server/`, Hono + Claude Sonnet 4.6) はそのまま流用する。
 
-ステータス: **検討中 (プラン草案)** / 開始予定: 未確定
+ステータス: **実装中 (Phase1 進行中)** / 開始日: 2026-04-30
 
 ## 目的・背景
 
@@ -40,7 +40,7 @@ photorans のクライアントを Expo + React Native + `react-native-vision-ca
 | HTTP | `URLSession` + `async/await` (multipart 自前構築) | `Alamofire` 等の外部依存は当面入れない |
 | ナビゲーション | SwiftUI `NavigationStack` + `TabView` | — |
 | 画像保存 | `FileManager` で App Group / Documents 配下 | — |
-| Xcode プロジェクト生成 | **XcodeGen** (`project.yml` を git 管理、`.xcodeproj` は CI で生成し非コミット) | Tuist (オーバースペック) / 手書き pbxproj (コンフリクト多発で却下) |
+| Xcode プロジェクト生成 | **XcodeGen** (`project.yml` も `.xcodeproj` も git 管理。WSL2 上で Swift toolchain (Linux) + XcodeGen をソースビルドし、`project.yml` 変更時に `xcodegen generate` で再生成。Bitrise 側では生成済み `.xcodeproj` をそのまま使う) | Tuist (オーバースペック) / 手書き pbxproj (コンフリクト多発で却下) |
 | ビルド / 配布 | **Bitrise** (macOS スタック、`xcodebuild archive` + `xcrun altool` で TestFlight 自動 upload) | GitHub Actions (macos-latest) / Xcode Cloud / Codemagic。EAS は廃止 |
 | ローカル開発環境 | WSL2 Ubuntu 上で Swift コード + `project.yml` 編集 → CI で `xcodegen generate` + フルビルド | 後述の「WSL2 開発ワークフロー」節 |
 | Android 対応 | **当面切り捨て** (Phase8 まで RN 維持、その後削除) | 将来再開時は別フェーズで Kotlin 実装 |
@@ -60,7 +60,8 @@ photorans のクライアントを Expo + React Native + `react-native-vision-ca
 #### できること (WSL2 上)
 
 - Swift コードの編集 (VSCode + [Swift extension](https://marketplace.visualstudio.com/items?itemName=sswg.swift-lang) + sourcekit-lsp)
-- Linux Swift toolchain (`swiftly` または公式 tarball) で **Apple フレームワーク非依存の Swift コード** を `swift build` / `swift test`
+- Linux Swift toolchain (`swiftly` で `~/.local/share/swiftly/` に Swift 6.3.1 導入済み) で **Apple フレームワーク非依存の Swift コード** を `swift build` / `swift test`
+- **XcodeGen を Linux ビルドして `xcodegen generate` を実行** (Apple SDK に依存しないため WSL2 上で動作)。`.xcodeproj` の生成・更新は WSL2 で完結し、CI に投げ直す必要なし
 - `swift-format` / `swiftlint` (Linux ビルド) によるフォーマット・lint
 - Xcode プロジェクトファイル (`project.pbxproj`) や `Info.plist`、Asset Catalog (JSON) の編集
 - CI スクリプトと Fastlane / Bitrise YAML の編集
@@ -162,7 +163,7 @@ photorans/
 
 - [x] **Android を切るかどうか** → 当面切り捨て (Phase8 で RN クライアント削除)
 - [x] **最低サポート iOS バージョン** → iOS 17.0
-- [x] **Xcode プロジェクト生成方式** → XcodeGen (`project.yml` のみ git 管理、`.xcodeproj` は CI で生成)
+- [x] **Xcode プロジェクト生成方式** → XcodeGen (`project.yml` + `.xcodeproj` 両方を git 管理。WSL2 で Swift toolchain (Linux) + XcodeGen Linux ビルドで再生成。Bitrise 接続を安全に通すため、当初の「CI で生成・非コミット」方針から変更)
 - [x] **ディレクトリ命名** → `ios/`
 - [x] **CI サービス** → Bitrise (月 200 分で足りるかは Phase8 で実測、不足なら GitHub Actions に振替検討)
 - [x] **既存 TestFlight アプリレコードを流用するか** → 流用 (`com.akiraak.photorans` をそのまま)
@@ -190,39 +191,54 @@ photorans/
 
 ### Phase1 Xcode プロジェクト基盤 + Bitrise 接続
 
-XcodeGen による `project.yml` ベースの構成で、`.xcodeproj` は CI で都度生成する方針 (技術選定表参照)。
+XcodeGen による `project.yml` ベースの構成。`.xcodeproj` は WSL2 上の XcodeGen Linux ビルドで生成し、生成物も git 管理する (技術選定表参照)。Bitrise はリポジトリ内の生成済み `.xcodeproj` を直接読む。
 
-#### Step1 XcodeGen で `ios/Photorans.xcodeproj` 雛形生成
+#### Step1 XcodeGen 入力 + SwiftUI スケルトン (✅ 完了 2026-04-30)
 
 - `ios/project.yml` を作成 (XcodeGen フォーマット)
   - `name: Photorans`、Bundle ID `com.akiraak.photorans`、Deployment Target iOS 17.0
   - Target: `Photorans` (iOS App, SwiftUI)、`PhotoransTests` (Unit Test)
   - Build Configuration: `Debug` / `Release`、`API_BASE_URL` を Build Setting で持つ (Debug = `http://10.0.1.137:3000`、Release = `https://photorans.chobi.me`)
+  - `schemes.Photorans` で shared scheme を明示定義 (Bitrise の scheme バリデーション要件)
 - `ios/Photorans/` 配下に SwiftUI スケルトン
   - `PhotoransApp.swift` (App entry point)
   - `RootView.swift` (`TabView` で「カメラ」「履歴」2 タブ、中身は Hello World)
   - `Info.plist` に `NSCameraUsageDescription` (日本語の利用目的説明)、`API_BASE_URL` を `$(API_BASE_URL)` で参照
-- `.gitignore` に `ios/Photorans.xcodeproj/`、`ios/*.xcworkspace/` 等の生成物を追記
 - `ios/README.md` に「`xcodegen generate` で `.xcodeproj` を生成する」旨を記載
-- 確認: WSL2 上では `.xcodeproj` 生成までは行わず (Bitrise で行うため)、`project.yml` の YAML 構文と参照ファイルの存在のみチェック
+- 確認: WSL2 上で `project.yml` の YAML 構文と Info.plist の plist 構文のみチェック (この時点で `.xcodeproj` 生成はまだ行わない)
+- コミット: `c0e9fa2 Phase1-1 Add iOS Xcode project skeleton (XcodeGen)`、`b969b55 Phase1-2 Add bitrise.yml for manual iOS builds` (このコミットで作った `bitrise.yml` は Step2 で xcodegen ステップを削る形に修正される)
 
-#### Step2 Bitrise セットアップ + `bitrise.yml`
+#### Step2 WSL2 で XcodeGen Linux ビルド + `.xcodeproj` 生成 (✅ 完了 2026-04-30)
+
+- **Swift toolchain (Linux) インストール** (✅ 完了): swiftly を `/tmp/swiftly` で展開し `swiftly init --assume-yes` で `~/.local/share/swiftly/toolchains/6.3.1` に Swift 6.3.1 を配置。`. ~/.local/share/swiftly/env.sh` で PATH に `swift` が通る
+- **XcodeGen ソースビルド** (✅ 完了):
+  - `git clone --depth 1 https://github.com/yonaskolb/XcodeGen.git /tmp/XcodeGen`
+  - `cd /tmp/XcodeGen && swift build -c release` (約 192 秒、Yams 等の依存も含めビルド成功)
+  - 生成物 `/tmp/XcodeGen/.build/release/xcodegen` を `install -m 0755 ... ~/.local/bin/xcodegen` で配置
+  - 動作確認: `xcodegen --version` → `Version: 2.45.4`
+- **`.xcodeproj` 生成** (✅ 完了): `cd ios && xcodegen generate` で `Photorans.xcodeproj/` を生成。中身は `project.pbxproj` / `project.xcworkspace/contents.xcworkspacedata` / `xcshareddata/xcschemes/Photorans.xcscheme` の 3 ファイル (shared scheme 含む)
+- **`.gitignore` 修正** (✅ 完了): `ios/Photorans.xcodeproj/` の除外行を削除し、`xcuserdata/` のみ除外する形に変更。`ios/build/`、`ios/DerivedData/` 等のビルド成果物の除外は維持
+- **`bitrise.yml` 修正** (✅ 完了): `Install XcodeGen` と `Generate Xcode project` の 2 Step を削除 (リポジトリに `.xcodeproj` が含まれるので不要)。`xcode-build-for-simulator` Step は維持
+- **`ios/README.md` 修正** (✅ 完了): 「WSL2 で swiftly + XcodeGen Linux ビルドを使って再生成」する手順に更新。`.xcodeproj` を git 管理する旨を明記
+- **コミット**: `Phase1-3 Build XcodeGen on Linux and commit generated .xcodeproj`
+- 確認: `git check-ignore` で `ios/Photorans.xcodeproj/project.pbxproj` が ignore されないこと (rc=1)、`xcodegen generate` が WSL2 で再現可能、`bitrise.yml` から xcodegen ステップが消えていることを確認済み
+
+#### Step3 Bitrise セットアップ + `bitrise.yml` 緑化
 
 - **Bitrise アカウント作成 + リポジトリ接続** (ユーザ操作)
-  - akiraak@gmail.com で Bitrise サインアップ
-  - GitHub リポジトリ `akiraak/photorans` を接続
-  - Webhook 自動設定 (push トリガ)
-- **`bitrise.yml` を作成** (リポジトリルート)
-  - `primary` Workflow:
-    1. `git-clone`
-    2. `script` Step で XcodeGen インストール (`brew install xcodegen`) + `cd ios && xcodegen generate`
-    3. `xcode-build-for-simulator` Step で `Photorans.xcodeproj` をシミュレータ向け未署名ビルド (`iPhone 16` / iOS 18)
-    4. `deploy-to-bitrise-io` Step でログ / artifact アップロード
-  - `release` Workflow は Phase6 で追加 (この時点ではプレースホルダのみ or 未定義)
-- **トリガマップ**: `push: main` / `pull_request: *` で `primary` Workflow 起動
-- **確認**: `git push` で Bitrise の `primary` が緑。`.xcodeproj` が CI 上で生成され、`xcodebuild build` がシミュレータ向けに成功すること。アーカイブ / 署名はまだ不要
-
-> WSL2 上では `xcodegen` バイナリを動かさない (Linux ビルド検証は Bitrise 側に集約)。`project.yml` の編集と CI ログ確認だけで Phase1 を回す。
+  - akiraak@gmail.com で Bitrise サインアップ → 最初の Workspace を作る
+  - ダッシュボードの **New project** → **Configure Bitrise CI**
+  - Workspace 選択 → Privacy: **Private**
+  - Provider: GitHub App (推奨) または OAuth → リポジトリ `akiraak/photorans` を選択 → デフォルトブランチ `main`
+  - Auto-detect で **React Native** と判定された場合は **Manual Setup → iOS** に切替:
+    - Project or Workspace path: `ios/Photorans.xcodeproj`
+    - Scheme name: `Photorans`
+    - Distribution method: `development`
+- **Configuration YAML をリポジトリ側に切替**:
+  - プロジェクト → Workflows → Configuration YAML → **Change** → 「Store in repository」 → パス `bitrise.yml` → **Validate and save**
+- **手動ビルド**: Web UI の **Start build** → Workflow `primary` → ログ確認
+  - `trigger_map: []` で push トリガなし。Web UI または API で起動する
+- **確認**: `primary` Workflow が緑。リポジトリ内の `ios/Photorans.xcodeproj` を直接読み、`xcode-build-for-simulator` がシミュレータ向け未署名ビルドに成功すること。アーカイブ / 署名はまだ不要
 
 ### Phase2 カメラ画面 (AVFoundation)
 

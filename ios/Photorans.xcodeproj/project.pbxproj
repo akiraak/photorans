@@ -1,0 +1,403 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD85F3512D949ED95929BAAC /* RootView.swift */; };
+		672E4E2A66EC80D3697D6FFA /* PhotoransTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */; };
+		A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3BC55D791008B3ED00BAAC7C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 35BBB53CACFBF08EB659162E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F6200B8FCA0E8F7197367EC9;
+			remoteInfo = Photorans;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0678F0E2C559D896C08871A5 /* PhotoransTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PhotoransTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		225655C9951E5F556341B619 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		345F43A959F869B4B3857F03 /* Photorans.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Photorans.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoransTests.swift; sourceTree = "<group>"; };
+		BD85F3512D949ED95929BAAC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoransApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		67B8BB3DB3FD8B2C349847F7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				345F43A959F869B4B3857F03 /* Photorans.app */,
+				0678F0E2C559D896C08871A5 /* PhotoransTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		72C6A732D5E1AE62ADE92FBC /* Photorans */ = {
+			isa = PBXGroup;
+			children = (
+				225655C9951E5F556341B619 /* Info.plist */,
+				FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */,
+				BD85F3512D949ED95929BAAC /* RootView.swift */,
+			);
+			path = Photorans;
+			sourceTree = "<group>";
+		};
+		74FDC87B6352A51F995F3ED6 /* PhotoransTests */ = {
+			isa = PBXGroup;
+			children = (
+				B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */,
+			);
+			path = PhotoransTests;
+			sourceTree = "<group>";
+		};
+		EFDD173D50D19CEFBE223F09 = {
+			isa = PBXGroup;
+			children = (
+				72C6A732D5E1AE62ADE92FBC /* Photorans */,
+				74FDC87B6352A51F995F3ED6 /* PhotoransTests */,
+				67B8BB3DB3FD8B2C349847F7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D90A5A5DD788B79DB977ABB6 /* PhotoransTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F8361E76E06594910859E864 /* Build configuration list for PBXNativeTarget "PhotoransTests" */;
+			buildPhases = (
+				C542288994CF371517332B5A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10270C382CBFAFB1D227894 /* PBXTargetDependency */,
+			);
+			name = PhotoransTests;
+			packageProductDependencies = (
+			);
+			productName = PhotoransTests;
+			productReference = 0678F0E2C559D896C08871A5 /* PhotoransTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F6200B8FCA0E8F7197367EC9 /* Photorans */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5CC062DE09C3238AE084B248 /* Build configuration list for PBXNativeTarget "Photorans" */;
+			buildPhases = (
+				43A1879A95567DF7FF67B1E7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Photorans;
+			packageProductDependencies = (
+			);
+			productName = Photorans;
+			productReference = 345F43A959F869B4B3857F03 /* Photorans.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		35BBB53CACFBF08EB659162E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 00C24DBB129FE0AB6C44A677 /* Build configuration list for PBXProject "Photorans" */;
+			developmentRegion = ja;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				ja,
+			);
+			mainGroup = EFDD173D50D19CEFBE223F09;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 67B8BB3DB3FD8B2C349847F7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F6200B8FCA0E8F7197367EC9 /* Photorans */,
+				D90A5A5DD788B79DB977ABB6 /* PhotoransTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		43A1879A95567DF7FF67B1E7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */,
+				66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C542288994CF371517332B5A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				672E4E2A66EC80D3697D6FFA /* PhotoransTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10270C382CBFAFB1D227894 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F6200B8FCA0E8F7197367EC9 /* Photorans */;
+			targetProxy = 3BC55D791008B3ED00BAAC7C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		05A652DF84DCF2C686F97B2F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Photorans/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akiraak.photorans;
+				PRODUCT_NAME = Photorans;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		20446ACF18E9EE345FD28496 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				API_BASE_URL = "http://10.0.1.137:3000";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		6FB8A581973651A395F06977 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Photorans/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akiraak.photorans;
+				PRODUCT_NAME = Photorans;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		70CC68D584493ABFB9B5D278 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.akiraak.photorans.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Photorans.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Photorans";
+			};
+			name = Release;
+		};
+		8027D82C89A978BBFD9BDC72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				API_BASE_URL = "https://photorans.chobi.me";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		FA471C024DBE7943227E1C80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.akiraak.photorans.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Photorans.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Photorans";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00C24DBB129FE0AB6C44A677 /* Build configuration list for PBXProject "Photorans" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				20446ACF18E9EE345FD28496 /* Debug */,
+				8027D82C89A978BBFD9BDC72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5CC062DE09C3238AE084B248 /* Build configuration list for PBXNativeTarget "Photorans" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05A652DF84DCF2C686F97B2F /* Debug */,
+				6FB8A581973651A395F06977 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F8361E76E06594910859E864 /* Build configuration list for PBXNativeTarget "PhotoransTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA471C024DBE7943227E1C80 /* Debug */,
+				70CC68D584493ABFB9B5D278 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 35BBB53CACFBF08EB659162E /* Project object */;
+}
