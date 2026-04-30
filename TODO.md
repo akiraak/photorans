@@ -1,10 +1,10 @@
 # TODO
 
 - [ ] iOSネイティブで作り直す [plan](docs/plans/ios-native-rewrite.md)
-  - [ ] Phase1 Xcode プロジェクト基盤 + Bitrise 接続
+  - [x] Phase1 Xcode プロジェクト基盤 + Bitrise 接続
     - [x] Step1 XcodeGen 入力 + SwiftUI スケルトン (`project.yml`、PhotoransApp、RootView、Info.plist)
     - [x] Step2 WSL2 で XcodeGen を Linux ビルド + `ios/Photorans.xcodeproj` 生成・コミット
-    - [ ] Step3 Bitrise アカウント接続 (Manual Setup / iOS) + Configuration YAML をリポジトリ側に切替 + `primary` Workflow を Web UI 手動起動 → 緑化確認
+    - [x] Step3 Bitrise アカウント接続 (Hobby plan) + Configuration YAML をリポジトリ側に切替 + `primary` Workflow を Web UI 手動起動 → 緑化確認 (`xcode-build-for-simulator@3` に bump で解決)
   - [ ] Phase2 カメラ画面 (AVFoundation)
   - [ ] Phase3 ネットワーク層 (`/translate` 連携)
   - [ ] Phase4 ローカル DB (SwiftData / Core Data)
