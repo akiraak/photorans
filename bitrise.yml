@@ -23,17 +23,17 @@ workflows:
   primary:
     description: |-
       リポジトリにコミット済みの ios/Photorans.xcodeproj を使い、
-      iPhone 16 シミュレータ向けに未署名ビルドする。
+      iOS シミュレータ向けに未署名ビルドする (generic destination)。
       アーカイブ・署名は行わない (Phase6 で release を追加)。
       .xcodeproj は WSL2 上の XcodeGen Linux ビルドで再生成する想定で、
       CI 側では生成ステップを持たない。
     steps:
     - git-clone@8: {}
-    - xcode-build-for-simulator@0:
+    - xcode-build-for-simulator@3:
         inputs:
         - project_path: $BITRISE_PROJECT_PATH
         - scheme: $BITRISE_SCHEME
         - configuration: $BITRISE_CONFIGURATION
-        - simulator_device: iPhone 16
-        - simulator_os_version: latest
+        # destination は default の generic/platform=iOS Simulator で十分
+        # (特定シミュレータの起動不要、ビルド検証のみ)
     - deploy-to-bitrise-io@2: {}
