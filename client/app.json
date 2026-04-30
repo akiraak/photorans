@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "photorans が書類を撮影するためにカメラを使用します。",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
