@@ -13,7 +13,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.akiraak.photorans",
+      "infoPlist": {
+        "NSCameraUsageDescription": "photorans が書類を撮影するためにカメラを使用します。",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,19 +26,19 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.akiraak.photorans"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-sqlite",
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "photorans が書類を撮影するためにカメラを使用します。"
-        }
-      ]
-    ]
+      "expo-sqlite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f048f995-ca0e-4708-b37c-8ff6a9d89cb2"
+      }
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {
   Camera,
+  CommonResolutions,
   useCameraDevice,
   useCameraPermission,
   usePhotoOutput,
@@ -41,7 +42,11 @@ function toFileUri(path: string): string {
 export default function CameraScreen({ navigation }: Props) {
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
-  const photoOutput = usePhotoOutput();
+  const photoOutput = usePhotoOutput({
+    targetResolution: CommonResolutions.FHD_4_3,
+    containerFormat: 'jpeg',
+    quality: 0.8,
+  });
   const isFocused = useIsFocused();
   const [busy, setBusy] = useState(false);
 
