@@ -14,6 +14,7 @@
 		785CB5BC3727E0AD1BE08B94 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6F0DBE480C684D580E5E88 /* CameraSession.swift */; };
 		9648360EAC47CC47E0E877DA /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0FB63D09D04136FEACD95F /* CameraView.swift */; };
 		A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */; };
+		F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D19083941DF31ECD70EC886 /* PhotoStorage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,6 +31,7 @@
 		0678F0E2C559D896C08871A5 /* PhotoransTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PhotoransTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		225655C9951E5F556341B619 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		345F43A959F869B4B3857F03 /* Photorans.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Photorans.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D19083941DF31ECD70EC886 /* PhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorage.swift; sourceTree = "<group>"; };
 		64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
 		8B6F0DBE480C684D580E5E88 /* CameraSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSession.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				8B6F0DBE480C684D580E5E88 /* CameraSession.swift */,
 				EB0FB63D09D04136FEACD95F /* CameraView.swift */,
 				673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */,
+				5D19083941DF31ECD70EC886 /* PhotoStorage.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -174,6 +177,7 @@
 				785CB5BC3727E0AD1BE08B94 /* CameraSession.swift in Sources */,
 				9648360EAC47CC47E0E877DA /* CameraView.swift in Sources */,
 				0166FA1C8C1575F994A33B7E /* CameraViewModel.swift in Sources */,
+				F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */,
 				A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */,
 				66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */,
 			);
