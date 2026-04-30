@@ -1,0 +1,55 @@
+format_version: "21"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: ios
+
+meta:
+  bitrise.io:
+    stack: osx-xcode-16.0.x
+    machine_type_id: g2-m1.4core
+
+app:
+  envs:
+  - BITRISE_PROJECT_PATH: ios/Photorans.xcodeproj
+  - BITRISE_SCHEME: Photorans
+  - BITRISE_CONFIGURATION: Debug
+
+# 手動ビルドのみ。git push では一切発火しない。
+# 起動方法:
+#   - Bitrise Web UI の "Start build" ボタン
+#   - API: curl https://api.bitrise.io/v0.1/apps/<APP_SLUG>/builds ...
+trigger_map: []
+
+workflows:
+  primary:
+    description: |-
+      XcodeGen で .xcodeproj を生成し、iPhone 16 シミュレータ向けに
+      未署名ビルドする。アーカイブ・署名は行わない (Phase6 で release を追加)。
+    steps:
+    - git-clone@8: {}
+    - script@1:
+        title: Install XcodeGen
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euxo pipefail
+            if ! command -v xcodegen >/dev/null 2>&1; then
+              brew install xcodegen
+            fi
+            xcodegen --version
+    - script@1:
+        title: Generate Xcode project
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euxo pipefail
+            cd ios
+            xcodegen generate
+            ls -la Photorans.xcodeproj
+    - xcode-build-for-simulator@0:
+        inputs:
+        - project_path: $BITRISE_PROJECT_PATH
+        - scheme: $BITRISE_SCHEME
+        - configuration: $BITRISE_CONFIGURATION
+        - simulator_device: iPhone 16
+        - simulator_os_version: latest
+    - deploy-to-bitrise-io@2: {}
