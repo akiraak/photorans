@@ -12,7 +12,6 @@ final class CameraViewModel {
     var isCapturing: Bool = false
     var isTranslating: Bool = false
     var lastError: String?
-    var lastSavedURL: URL?
     var lastResult: TranslateResponse?
     /// 直近に観測した有効な端末向きを `AVCaptureConnection.videoRotationAngle` 用の角度で保持。
     /// プレビュー回転 / 撮影回転 / UI アイコン回転で共通参照する。
@@ -59,7 +58,6 @@ final class CameraViewModel {
             let captured = try await camera.capturePhoto(rotationAngle: angle)
             compressed = ImageCompressor.compressForUpload(jpegData: captured)
             saved = try PhotoStorage.save(jpegData: compressed)
-            lastSavedURL = saved.absoluteURL
         } catch {
             lastError = error.localizedDescription
             isCapturing = false
