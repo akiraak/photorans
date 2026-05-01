@@ -28,7 +28,8 @@
     - [x] Step2 タグ `v0.1.1` push → `release` Workflow → TestFlight 配布
     - [x] Step3 LAN 内 1 回目動作確認 → `/translate` で Anthropic Vision 5MB 上限超過の 400 エラー発覚 (`6583144 bytes > 5242880 bytes`)
     - [x] Step4 撮影画像のクライアント側自動圧縮 (Anthropic 5MB 上限内に収める)
-    - [ ] Step5 タグ `v0.1.2` push → `release` Workflow → TestFlight 再配布
+    - [x] Step5 タグ `v0.1.2` push → `release` Workflow → TestFlight 再配布 (build 13)
+    - [ ] Step5b 圧縮しきい値再調整 (Anthropic 5MB 上限は base64 サイズと判明) → タグ `v0.1.3` 再配布
     - [ ] Step6 LAN 内動作再確認 (撮影 → 翻訳 → 一覧 → 詳細、AF / 横向き orientation)
   - [ ] Phase8 本番サーバ接続版の再確認 + 旧 RN クライアント撤去
     - [ ] Step1 Release の `API_BASE_URL` を `https://photorans.chobi.me` に戻す + タグ `v0.1.3` で TestFlight 再配布

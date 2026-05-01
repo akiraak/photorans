@@ -2,45 +2,47 @@ import Foundation
 import UIKit
 
 enum ImageCompressor {
-    /// Anthropic Vision 5MB 上限に対する安全マージン込みの目標サイズ。
-    static let defaultTargetBytes: Int = 4_500_000
+    /// Anthropic Vision の 5 MiB 上限は **base64 文字列長** に対するもの
+    /// (`messages.0.content.0.image.source.base64: image exceeds 5 MB maximum` 検証)。
+    /// base64 は raw の 4/3 倍に膨らむので、raw は 3.75 MiB 未満に抑える必要がある。
+    /// ここではさらに余裕を持たせて 1.43 MiB ≒ 1_500_000 bytes を target とする
+    /// (base64 換算 ~2 MiB)。OCR には十分な情報量。
+    static let defaultTargetBytes: Int = 1_500_000
 
-    /// JPEG データを `targetBytes` 以下になるよう段階的に再エンコードして返す。
-    /// 既に target 以下なら無加工で返す。全試行で target を超えた場合は最後 (= 最も小さい)
-    /// 試行結果を返す (極端な巨大画像はサーバ側 4xx でユーザに見せる想定)。
+    /// 撮影画像のリサイズ上限長辺。Anthropic Vision は内部で ~1568px に縮小するため、
+    /// 2048px もあれば OCR 精度損失はほぼ無い。
+    static let defaultMaxLongestEdge: CGFloat = 2048
+
+    /// JPEG データを「Anthropic Vision に投げられる base64 サイズ」 + 「OCR で読める解像度」
+    /// の双方を満たすように再エンコードして返す。
+    /// - 元画像が `maxLongestEdge` を超えるなら必ず縮小する (フルサイズで通すパスは持たない)
+    /// - 縮小後に quality を段階的に下げて `targetBytes` 以下を狙う
+    /// - 最終フォールバックとして 1280px / 0.5 を試す
+    /// - 全段階で超えた場合は最も小さい結果 (= 最終フォールバック or 縮小後 quality 0.35) を返す
     static func compressForUpload(
         jpegData: Data,
-        targetBytes: Int = defaultTargetBytes
+        targetBytes: Int = defaultTargetBytes,
+        maxLongestEdge: CGFloat = defaultMaxLongestEdge
     ) -> Data {
-        if jpegData.count <= targetBytes {
-            return jpegData
-        }
         guard let image = UIImage(data: jpegData) else {
             return jpegData
         }
 
-        for quality in [0.85, 0.7, 0.5] as [CGFloat] {
-            if let data = image.jpegData(compressionQuality: quality),
+        let resized = image.resizedToFit(longestEdge: maxLongestEdge) ?? image
+
+        for quality in [0.8, 0.65, 0.5] as [CGFloat] {
+            if let data = resized.jpegData(compressionQuality: quality),
                data.count <= targetBytes {
                 return data
             }
         }
 
-        if let resized = image.resizedToFit(longestEdge: 2048) {
-            for quality in [0.85, 0.7, 0.5] as [CGFloat] {
-                if let data = resized.jpegData(compressionQuality: quality),
-                   data.count <= targetBytes {
-                    return data
-                }
-            }
-        }
-
-        if let resized = image.resizedToFit(longestEdge: 1600),
-           let data = resized.jpegData(compressionQuality: 0.7) {
+        if let smaller = image.resizedToFit(longestEdge: 1280),
+           let data = smaller.jpegData(compressionQuality: 0.5) {
             return data
         }
 
-        return image.jpegData(compressionQuality: 0.5) ?? jpegData
+        return resized.jpegData(compressionQuality: 0.35) ?? jpegData
     }
 }
 
