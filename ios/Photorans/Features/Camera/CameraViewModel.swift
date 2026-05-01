@@ -46,13 +46,14 @@ final class CameraViewModel {
         isCapturing = true
 
         let angle = currentRotationAngle()
-        let captured: Data
+        let compressed: Data
         let saved: SavedPhoto
         do {
-            captured = try await camera.capturePhoto(rotationAngle: angle)
-            saved = try PhotoStorage.save(jpegData: captured)
+            let captured = try await camera.capturePhoto(rotationAngle: angle)
+            compressed = ImageCompressor.compressForUpload(jpegData: captured)
+            saved = try PhotoStorage.save(jpegData: compressed)
             lastSavedURL = saved.absoluteURL
-            lastThumbnail = UIImage(data: captured)
+            lastThumbnail = UIImage(data: compressed)
         } catch {
             lastError = error.localizedDescription
             isCapturing = false
@@ -60,7 +61,7 @@ final class CameraViewModel {
         }
         isCapturing = false
 
-        await translate(jpegData: captured, savedPhoto: saved, modelContext: modelContext)
+        await translate(jpegData: compressed, savedPhoto: saved, modelContext: modelContext)
     }
 
     private func translate(jpegData: Data, savedPhoto: SavedPhoto, modelContext: ModelContext) async {

@@ -13,6 +13,7 @@
 		3A5C478A7A1295D294394C35 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */; };
 		66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD85F3512D949ED95929BAAC /* RootView.swift */; };
 		672E4E2A66EC80D3697D6FFA /* PhotoransTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */; };
+		69B9E75C2FB9ECF7F32CF01A /* ImageCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F01FE4D65020BAF5ADD8DD /* ImageCompressor.swift */; };
 		6E964864F9E07A2FD2FE352D /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91EDBE037FDFC828DEFDA54 /* HistoryListView.swift */; };
 		70033C5A31F78A77F590AFF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97403F72A81FDB08A684E400 /* Assets.xcassets */; };
 		785CB5BC3727E0AD1BE08B94 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6F0DBE480C684D580E5E88 /* CameraSession.swift */; };
@@ -37,6 +38,7 @@
 		0DEDC83685303F8329092022 /* TranslateAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateAPI.swift; sourceTree = "<group>"; };
 		225655C9951E5F556341B619 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		345F43A959F869B4B3857F03 /* Photorans.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Photorans.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		34F01FE4D65020BAF5ADD8DD /* ImageCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCompressor.swift; sourceTree = "<group>"; };
 		4656EE73399C074F9AC63880 /* HistoryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntry.swift; sourceTree = "<group>"; };
 		5D19083941DF31ECD70EC886 /* PhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorage.swift; sourceTree = "<group>"; };
 		64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 				8B6F0DBE480C684D580E5E88 /* CameraSession.swift */,
 				EB0FB63D09D04136FEACD95F /* CameraView.swift */,
 				673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */,
+				34F01FE4D65020BAF5ADD8DD /* ImageCompressor.swift */,
 				5D19083941DF31ECD70EC886 /* PhotoStorage.swift */,
 			);
 			path = Camera;
@@ -239,6 +242,7 @@
 				1C760514C3408428DEA2B31E /* HistoryDetailView.swift in Sources */,
 				2008469B7F62836744DD16A2 /* HistoryEntry.swift in Sources */,
 				6E964864F9E07A2FD2FE352D /* HistoryListView.swift in Sources */,
+				69B9E75C2FB9ECF7F32CF01A /* ImageCompressor.swift in Sources */,
 				F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */,
 				A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */,
 				66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */,

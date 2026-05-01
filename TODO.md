@@ -27,7 +27,7 @@
     - [x] Step1 Release の `API_BASE_URL` を `http://10.0.1.137:3000` に切替 + xcodegen generate + コミット
     - [x] Step2 タグ `v0.1.1` push → `release` Workflow → TestFlight 配布
     - [x] Step3 LAN 内 1 回目動作確認 → `/translate` で Anthropic Vision 5MB 上限超過の 400 エラー発覚 (`6583144 bytes > 5242880 bytes`)
-    - [ ] Step4 撮影画像のクライアント側自動圧縮 (Anthropic 5MB 上限内に収める)
+    - [x] Step4 撮影画像のクライアント側自動圧縮 (Anthropic 5MB 上限内に収める)
     - [ ] Step5 タグ `v0.1.2` push → `release` Workflow → TestFlight 再配布
     - [ ] Step6 LAN 内動作再確認 (撮影 → 翻訳 → 一覧 → 詳細、AF / 横向き orientation)
   - [ ] Phase8 本番サーバ接続版の再確認 + 旧 RN クライアント撤去
