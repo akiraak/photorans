@@ -7,8 +7,8 @@
     - [x] Step1-2 `CameraView` を GeometryReader でレイアウト構成に変更し、画面上部に preview を貼って下部余白に bottomControls を配置 (portrait 想定)
     - [x] Step1-3 実機で「枠に映っている範囲 = 撮影される範囲」を確認、`/admin` で撮影画像の構図がプレビューと一致
   - [ ] Phase2 プレビュー回転対応 (`CameraPreviewView` の connection 角度追従)
-    - [ ] Step2-1 `CameraViewModel` に `lastValidRotationAngle: CGFloat` を `@Observable` の var として導入。orientation observer のクロージャから `portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込む (それ以外の向きは無視 = 直前値維持)。`capturePhoto` 内の `currentRotationAngle()` 呼び出しも同プロパティ参照に切替
-    - [ ] Step2-2 `CameraPreviewView.updateUIView` で受け取った角度を `previewLayer.connection?.videoRotationAngle` に反映 (`isVideoRotationAngleSupported` チェック)
+    - [x] Step2-1 `CameraViewModel` に `lastValidRotationAngle: CGFloat` を `@Observable` の var として導入。orientation observer のクロージャから `portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込む (それ以外の向きは無視 = 直前値維持)。`capturePhoto` 内の `currentRotationAngle()` 呼び出しも同プロパティ参照に切替
+    - [x] Step2-2 `CameraPreviewView.updateUIView` で受け取った角度を `previewLayer.connection?.videoRotationAngle` に反映 (`isVideoRotationAngleSupported` チェック)
     - [ ] Step2-3 実機で landscape にしたときプレビューが正しく回ることを確認
   - [ ] Phase3 撮影 UI の回転追従 + landscape レイアウト (シャッター位置とアイコン向き)
     - [ ] Step3-1 `CameraView` の GeometryReader 内で preview の余白領域 (portrait なら下、landscape なら右) を計算して bottomControls の配置を切替

@@ -7,6 +7,9 @@ import UIKit
 /// device 座標 (`AVCaptureDevice.focusPointOfInterest` 用、0...1) の両方で通知される。
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
+    /// `AVCaptureConnection.videoRotationAngle` に流し込む角度。
+    /// `CameraViewModel.lastValidRotationAngle` を渡す前提。
+    let rotationAngle: CGFloat
     var onTap: (@MainActor (_ layerPoint: CGPoint, _ devicePoint: CGPoint) -> Void)?
 
     func makeCoordinator() -> Coordinator {
@@ -19,6 +22,7 @@ struct CameraPreviewView: UIViewRepresentable {
         // WYSIWYG: プレビュー枠 = 撮影画像の見える範囲を一致させる。`.resizeAspectFill`
         // は画像が枠よりはみ出して保存範囲とズレるため使わない。
         view.previewLayer.videoGravity = .resizeAspect
+        applyRotationAngle(to: view.previewLayer)
 
         let recognizer = UITapGestureRecognizer(
             target: context.coordinator,
@@ -33,7 +37,15 @@ struct CameraPreviewView: UIViewRepresentable {
         if uiView.previewLayer.session !== session {
             uiView.previewLayer.session = session
         }
+        applyRotationAngle(to: uiView.previewLayer)
         context.coordinator.onTap = onTap
+    }
+
+    /// `previewLayer.connection` に `rotationAngle` を反映する。サポート外角度は無視。
+    private func applyRotationAngle(to layer: AVCaptureVideoPreviewLayer) {
+        guard let connection = layer.connection,
+              connection.isVideoRotationAngleSupported(rotationAngle) else { return }
+        connection.videoRotationAngle = rotationAngle
     }
 
     /// UITapGestureRecognizer のアクションは常に main thread で呼ばれるため、

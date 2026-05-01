@@ -23,7 +23,10 @@ struct CameraView: View {
 
                 VStack(spacing: 0) {
                     ZStack {
-                        CameraPreviewView(session: viewModel.camera.session) { layerPoint, devicePoint in
+                        CameraPreviewView(
+                            session: viewModel.camera.session,
+                            rotationAngle: viewModel.lastValidRotationAngle
+                        ) { layerPoint, devicePoint in
                             viewModel.focus(at: devicePoint)
                             showFocusReticle(at: layerPoint)
                         }

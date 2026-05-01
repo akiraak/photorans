@@ -14,6 +14,11 @@ final class CameraViewModel {
     var lastError: String?
     var lastSavedURL: URL?
     var lastResult: TranslateResponse?
+    /// 直近に観測した有効な端末向きを `AVCaptureConnection.videoRotationAngle` 用の角度で保持。
+    /// プレビュー回転 / 撮影回転 / UI アイコン回転で共通参照する。
+    /// portrait=90 / landscapeLeft=0 / landscapeRight=180 のいずれか。
+    /// portraitUpsideDown / faceUp / faceDown / unknown が来たときは更新しない (直前値維持)。
+    var lastValidRotationAngle: CGFloat = 90
 
     private var orientationObserver: NSObjectProtocol?
 
@@ -44,7 +49,7 @@ final class CameraViewModel {
         guard permissionStatus == .authorized, !isCapturing, !isTranslating else { return }
         isCapturing = true
 
-        let angle = currentRotationAngle()
+        let angle = lastValidRotationAngle
         let compressed: Data
         let saved: SavedPhoto
         do {
@@ -105,12 +110,17 @@ final class CameraViewModel {
     private func startTrackingOrientation() {
         guard orientationObserver == nil else { return }
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+        // 起動時の初期値: 既存値 (default 90) を念のため現在向きで上書き。
+        updateRotationAngleFromDeviceOrientation()
         orientationObserver = NotificationCenter.default.addObserver(
             forName: UIDevice.orientationDidChangeNotification,
             object: nil,
             queue: .main
-        ) { _ in
-            // 値は capturePhoto 時に直接読むので、observer 自体は通知購読を維持するためだけに登録。
+        ) { [weak self] _ in
+            // queue: .main で配送されるため main thread 上。`@MainActor` 隔離の self を直接更新する。
+            MainActor.assumeIsolated {
+                self?.updateRotationAngleFromDeviceOrientation()
+            }
         }
     }
 
@@ -122,15 +132,19 @@ final class CameraViewModel {
         UIDevice.current.endGeneratingDeviceOrientationNotifications()
     }
 
-    /// `UIDevice.current.orientation` を `AVCaptureConnection.videoRotationAngle` 用の角度に変換。
-    /// 背面カメラ前提のマッピング。`unknown` / `faceUp` / `faceDown` は portrait (90°) にフォールバック。
-    private func currentRotationAngle() -> CGFloat {
+    /// `UIDevice.current.orientation` を `AVCaptureConnection.videoRotationAngle` 用の角度に変換し、
+    /// `lastValidRotationAngle` を更新する。背面カメラ前提のマッピング。
+    /// `portraitUpsideDown` / `faceUp` / `faceDown` / `unknown` は無視 (直前値維持)。
+    private func updateRotationAngleFromDeviceOrientation() {
         switch UIDevice.current.orientation {
-        case .portrait: return 90
-        case .portraitUpsideDown: return 270
-        case .landscapeLeft: return 0
-        case .landscapeRight: return 180
-        default: return 90
+        case .portrait:
+            lastValidRotationAngle = 90
+        case .landscapeLeft:
+            lastValidRotationAngle = 0
+        case .landscapeRight:
+            lastValidRotationAngle = 180
+        default:
+            break
         }
     }
 }
