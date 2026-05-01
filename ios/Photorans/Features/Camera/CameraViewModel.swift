@@ -19,6 +19,9 @@ final class CameraViewModel {
     /// portrait=90 / landscapeLeft=0 / landscapeRight=180 のいずれか。
     /// portraitUpsideDown / faceUp / faceDown / unknown が来たときは更新しない (直前値維持)。
     var lastValidRotationAngle: CGFloat = 90
+    /// Phase2 Step2-3 デバッグ用: orientation observer が何度呼ばれたかを記録。
+    /// Phase3 着手時に削除する。
+    var debugUpdateCount: Int = 0
 
     private var orientationObserver: NSObjectProtocol?
 
@@ -117,8 +120,9 @@ final class CameraViewModel {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            // queue: .main で配送されるため main thread 上。`@MainActor` 隔離の self を直接更新する。
-            MainActor.assumeIsolated {
+            // queue: .main で配送されるが `MainActor.assumeIsolated` は executor を check するため、
+            // Task で MainActor 隔離 context を明示的に作って self を安全に更新する。
+            Task { @MainActor in
                 self?.updateRotationAngleFromDeviceOrientation()
             }
         }
@@ -136,6 +140,7 @@ final class CameraViewModel {
     /// `lastValidRotationAngle` を更新する。背面カメラ前提のマッピング。
     /// `portraitUpsideDown` / `faceUp` / `faceDown` / `unknown` は無視 (直前値維持)。
     private func updateRotationAngleFromDeviceOrientation() {
+        debugUpdateCount += 1
         switch UIDevice.current.orientation {
         case .portrait:
             lastValidRotationAngle = 90
