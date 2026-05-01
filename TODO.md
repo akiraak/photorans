@@ -23,14 +23,14 @@
       - [x] Sub2 AppIcon Asset Catalog 追加 (`ios/Photorans/Resources/Assets.xcassets/AppIcon.appiconset/`、`client/assets/icon.png` 1024×1024 を流用)
       - [x] Sub3 Bitrise stack を `osx-xcode-16.0.x` → `osx-xcode-26.4.x` に bump
       - [x] Sub4 タグ `v0.1.0` を打ち直して再ビルド → TestFlight 着信確認 (release Workflow 緑、iPhone TestFlight でインストール成功)
-  - [ ] Phase7 LAN サーバ接続版を TestFlight で実機確認
+  - [x] Phase7 LAN サーバ接続版を TestFlight で実機確認
     - [x] Step1 Release の `API_BASE_URL` を `http://10.0.1.137:3000` に切替 + xcodegen generate + コミット
     - [x] Step2 タグ `v0.1.1` push → `release` Workflow → TestFlight 配布
     - [x] Step3 LAN 内 1 回目動作確認 → `/translate` で Anthropic Vision 5MB 上限超過の 400 エラー発覚 (`6583144 bytes > 5242880 bytes`)
     - [x] Step4 撮影画像のクライアント側自動圧縮 (Anthropic 5MB 上限内に収める)
     - [x] Step5 タグ `v0.1.2` push → `release` Workflow → TestFlight 再配布 (build 13)
-    - [ ] Step5b 圧縮しきい値再調整 (Anthropic 5MB 上限は base64 サイズと判明) → タグ `v0.1.3` 再配布
-    - [ ] Step6 LAN 内動作再確認 (撮影 → 翻訳 → 一覧 → 詳細、AF / 横向き orientation)
+    - [x] Step5b 圧縮しきい値再調整 (Anthropic 5MB 上限は base64 サイズと判明) → タグ `v0.1.3` 再配布
+    - [x] Step6 LAN 内動作再確認 (撮影 → 翻訳 → 一覧 → 詳細、AF / 横向き orientation)
   - [ ] Phase8 本番サーバ接続版の再確認 + 旧 RN クライアント撤去
     - [ ] Step1 Release の `API_BASE_URL` を `https://photorans.chobi.me` に戻す + タグ `v0.1.3` で TestFlight 再配布
     - [ ] Step2 LAN 外 (モバイル回線) で本番サーバ向けに同フロー確認 + `/admin` に履歴反映を確認
