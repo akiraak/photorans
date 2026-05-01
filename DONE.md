@@ -2,6 +2,7 @@
 
 ## 2026-04
 
+- 2026-04-30: Phase3 ネットワーク層 (`/translate` 連携) (`Photorans/Networking/TranslateAPI.swift` を新設、`actor TranslateAPI` + `URLSession` で multipart/form-data クライアントを実装。`Bundle.main` 経由で Info.plist の `API_BASE_URL` を読み、60s タイムアウト + `LocalizedError` 準拠の日本語メッセージ。ATS は当初プランの `NSAllowsArbitraryLoads`(Debug) から、より制限的な `NSExceptionDomains` 方式に変更し `10.0.1.137` のみ HTTP を許可。`CameraViewModel` に `isTranslating` / `lastResult` を追加して撮影成功後に自動翻訳、暫定 `TranslateResultView` (sheet) に原文/訳文/モデルを表示。Phase4-5 で SwiftData + 履歴 UI に置換予定。WSL2 で `xcodegen generate` 成功し Networking グループが pbxproj に登録された。Bitrise ビルドはコミット → push 後に確認)
 - 2026-04-28: vibeboard をリポジトリに取り込み、`run-vibeboard.sh` と運用ルールを整備
 - 2026-04-28: CLAUDE.md にプロジェクト概要と未確定項目を整理
 - 2026-04-29: Phase1-1 server/ 初期化 (Node.js 22 + TypeScript + Hono の最小セット、`npm run dev` で hello world 確認)

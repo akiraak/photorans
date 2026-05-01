@@ -11,9 +11,11 @@
 		3A5C478A7A1295D294394C35 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */; };
 		66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD85F3512D949ED95929BAAC /* RootView.swift */; };
 		672E4E2A66EC80D3697D6FFA /* PhotoransTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */; };
+		721D07B8DEE7AE389306ACDD /* TranslateResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E927D98011248B6BA229BA0 /* TranslateResultView.swift */; };
 		785CB5BC3727E0AD1BE08B94 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6F0DBE480C684D580E5E88 /* CameraSession.swift */; };
 		9648360EAC47CC47E0E877DA /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0FB63D09D04136FEACD95F /* CameraView.swift */; };
 		A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */; };
+		F38DFFFDAC5AD6293AC50739 /* TranslateAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DEDC83685303F8329092022 /* TranslateAPI.swift */; };
 		F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D19083941DF31ECD70EC886 /* PhotoStorage.swift */; };
 /* End PBXBuildFile section */
 
@@ -29,8 +31,10 @@
 
 /* Begin PBXFileReference section */
 		0678F0E2C559D896C08871A5 /* PhotoransTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PhotoransTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0DEDC83685303F8329092022 /* TranslateAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateAPI.swift; sourceTree = "<group>"; };
 		225655C9951E5F556341B619 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		345F43A959F869B4B3857F03 /* Photorans.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Photorans.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E927D98011248B6BA229BA0 /* TranslateResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateResultView.swift; sourceTree = "<group>"; };
 		5D19083941DF31ECD70EC886 /* PhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorage.swift; sourceTree = "<group>"; };
 		64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
@@ -42,6 +46,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		1181249EDF30851F8D28E8B7 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				0DEDC83685303F8329092022 /* TranslateAPI.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
 		209E3B7E95D1B97412E1AF59 /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -63,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				209E3B7E95D1B97412E1AF59 /* Features */,
+				1181249EDF30851F8D28E8B7 /* Networking */,
 				225655C9951E5F556341B619 /* Info.plist */,
 				FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */,
 				BD85F3512D949ED95929BAAC /* RootView.swift */,
@@ -86,6 +99,7 @@
 				EB0FB63D09D04136FEACD95F /* CameraView.swift */,
 				673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */,
 				5D19083941DF31ECD70EC886 /* PhotoStorage.swift */,
+				4E927D98011248B6BA229BA0 /* TranslateResultView.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -180,6 +194,8 @@
 				F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */,
 				A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */,
 				66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */,
+				F38DFFFDAC5AD6293AC50739 /* TranslateAPI.swift in Sources */,
+				721D07B8DEE7AE389306ACDD /* TranslateResultView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

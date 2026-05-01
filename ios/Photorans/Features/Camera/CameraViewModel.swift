@@ -9,9 +9,11 @@ final class CameraViewModel {
     let camera = CameraSession()
     var permissionStatus: AVAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
     var isCapturing: Bool = false
+    var isTranslating: Bool = false
     var lastError: String?
     var lastSavedURL: URL?
     var lastThumbnail: UIImage?
+    var lastResult: TranslateResponse?
 
     private var orientationObserver: NSObjectProtocol?
 
@@ -39,16 +41,31 @@ final class CameraViewModel {
     }
 
     func capturePhoto() async {
-        guard permissionStatus == .authorized, !isCapturing else { return }
+        guard permissionStatus == .authorized, !isCapturing, !isTranslating else { return }
         isCapturing = true
-        defer { isCapturing = false }
 
         let angle = currentRotationAngle()
+        let captured: Data
         do {
-            let data = try await camera.capturePhoto(rotationAngle: angle)
-            let url = try PhotoStorage.save(jpegData: data)
+            captured = try await camera.capturePhoto(rotationAngle: angle)
+            let url = try PhotoStorage.save(jpegData: captured)
             lastSavedURL = url
-            lastThumbnail = UIImage(data: data)
+            lastThumbnail = UIImage(data: captured)
+        } catch {
+            lastError = error.localizedDescription
+            isCapturing = false
+            return
+        }
+        isCapturing = false
+
+        await translate(jpegData: captured)
+    }
+
+    private func translate(jpegData: Data) async {
+        isTranslating = true
+        defer { isTranslating = false }
+        do {
+            lastResult = try await TranslateAPI.shared.translate(jpegData: jpegData)
         } catch {
             lastError = error.localizedDescription
         }

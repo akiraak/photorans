@@ -32,6 +32,10 @@ struct CameraView: View {
             default:
                 EmptyView()
             }
+
+            if viewModel.isTranslating {
+                translatingOverlay
+            }
         }
         .task {
             await viewModel.onAppear()
@@ -45,11 +49,34 @@ struct CameraView: View {
                 viewModel.lastError = nil
             }
         }
-        .alert("撮影エラー", isPresented: errorAlertBinding) {
+        .alert("エラー", isPresented: errorAlertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorAlertMessage ?? "")
         }
+        .sheet(item: resultBinding) { result in
+            TranslateResultView(result: result)
+        }
+    }
+
+    private var resultBinding: Binding<TranslateResultItem?> {
+        Binding(
+            get: { viewModel.lastResult.map(TranslateResultItem.init) },
+            set: { if $0 == nil { viewModel.lastResult = nil } }
+        )
+    }
+
+    private var translatingOverlay: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .tint(.white)
+            Text("翻訳中…")
+                .font(.subheadline)
+                .foregroundStyle(.white)
+        }
+        .padding(24)
+        .background(.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var errorAlertBinding: Binding<Bool> {
@@ -92,7 +119,7 @@ struct CameraView: View {
                 }
             }
         }
-        .disabled(viewModel.isCapturing)
+        .disabled(viewModel.isCapturing || viewModel.isTranslating)
         .accessibilityLabel("撮影")
     }
 
