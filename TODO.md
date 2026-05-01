@@ -2,10 +2,10 @@
 
 - [ ] 利用トークンと料金を管理画面に表示
 - [ ] 横向きの写真を撮りたい / 撮影範囲の WYSIWYG 化 ([plan](docs/plans/landscape-capture.md))
-  - [ ] Phase1 撮影範囲 WYSIWYG 化 (`videoGravity = .resizeAspect` + portrait レイアウト再設計)
+  - [x] Phase1 撮影範囲 WYSIWYG 化 (`videoGravity = .resizeAspect` + portrait レイアウト再設計)
     - [x] Step1-1 `CameraPreviewView.makeUIView` で `videoGravity` を `.resizeAspect` に変更
     - [x] Step1-2 `CameraView` を GeometryReader でレイアウト構成に変更し、画面上部に preview を貼って下部余白に bottomControls を配置 (portrait 想定)
-    - [ ] Step1-3 実機で「枠に映っている範囲 = 撮影される範囲」を確認、`/admin` で撮影画像の構図がプレビューと一致
+    - [x] Step1-3 実機で「枠に映っている範囲 = 撮影される範囲」を確認、`/admin` で撮影画像の構図がプレビューと一致
   - [ ] Phase2 プレビュー回転対応 (`CameraPreviewView` の connection 角度追従)
     - [ ] Step2-1 `CameraViewModel` に `lastValidRotationAngle: CGFloat` を `@Observable` の var として導入。orientation observer のクロージャから `portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込む (それ以外の向きは無視 = 直前値維持)。`capturePhoto` 内の `currentRotationAngle()` 呼び出しも同プロパティ参照に切替
     - [ ] Step2-2 `CameraPreviewView.updateUIView` で受け取った角度を `previewLayer.connection?.videoRotationAngle` に反映 (`isVideoRotationAngleSupported` チェック)
