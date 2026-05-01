@@ -2,7 +2,7 @@
 
 photorans のクライアントを Expo + React Native + `react-native-vision-camera` 構成から、Swift によるフルネイティブ iOS アプリに作り直す。サーバ (`server/`, Hono + Claude Sonnet 4.6) はそのまま流用する。
 
-ステータス: **実装中 (Phase1〜5 完了 / Phase6 Step4 進行中)** / 開始日: 2026-04-30
+ステータス: **実装中 (Phase1〜6 完了 / Phase7 着手前、LAN サーバ接続版での確認に方針変更 2026-05-01)** / 開始日: 2026-04-30
 
 ## 目的・背景
 
@@ -364,7 +364,7 @@ App Store Connect は既存 `com.akiraak.photorans` レコードを流用 ([test
 - `Info.plist` に `ITSAppUsesNonExemptEncryption: false` を追加 (HTTPS のみ使用、exempt)
 - 当初プランから外したもの: `manage-ios-code-signing` Step (Step2 を Manual にしたため不要) / `set-xcode-build-number` Step (`xcconfig_content` で代替)
 
-#### Step4 初回 release ビルド + TestFlight 着信確認 (進行中)
+#### Step4 初回 release ビルド + TestFlight 着信確認 (✅ 完了 2026-04-30)
 
 ##### Sub1 初回 release ビルド実行 (✅ 完了 2026-04-30)
 
@@ -396,36 +396,58 @@ App Store Connect は既存 `com.akiraak.photorans` レコードを流用 ([test
 - `machine_type_id: g2-m1.4core` は据え置き
 - Xcode 26 / iOS 26 SDK は iOS 17.0 deployment target をそのまま受け入れる (deployment target と SDK は独立)
 
-##### Sub4 タグを打ち直して再ビルド (Akira さん作業、未着手)
+##### Sub4 タグを打ち直して再ビルド (✅ 完了 2026-04-30)
 
-- Sub2 + Sub3 を 1 コミットにまとめてコミット (例: `Phase6-4 Add AppIcon asset catalog + bump Bitrise to Xcode 26.4`)
-- 既存タグを更新:
+- Sub2 (`ee745c1 Phase6-4-2 Add AppIcon asset catalog`) と Sub3 (`3e22195 Phase6-4-3 Bump Bitrise stack to Xcode 26.4`) を別コミットで反映 (1 コミット集約案からは逸脱したが結果同等)
+- `v0.1.0` タグを `3e22195` に再 push
+- Bitrise の `release` Workflow が緑化、`.ipa` が `deploy-to-itunesconnect-application-loader@1` で TestFlight に到達
+- App Store Connect → TestFlight 経由で Akira さんの iPhone にインストール成功 (起動・動作確認は Phase7 で実施)
 
-  ```bash
-  git push --delete origin v0.1.0
-  git tag -d v0.1.0
-  git tag v0.1.0
-  git push origin v0.1.0
-  ```
+### Phase7 LAN サーバ接続版を TestFlight で実機確認
 
-- Bitrise の `release` Workflow が緑化することを確認
-- App Store Connect → TestFlight タブにビルドが現れ、Apple のプロセシング後に Internal Testing グループへ自動配信
-- iPhone の TestFlight アプリでビルドが見えること (実際のインストール・動作確認は Phase7)
+WSL2 上のローカルサーバ (`http://10.0.1.137:3000`) に接続するビルドを TestFlight 経由で iPhone に配布し、LAN 内で動作確認する。本番サーバ (`https://photorans.chobi.me`) 経由の確認は Phase8 で行う。
 
-> 詰まりポイントの想定: AppIcon が transparency を持っていると altool に弾かれる (`client/assets/icon.png` は事前確認済みの想定で進めるが、再失敗したら alpha を flatten する必要あり) / Xcode 26 で SwiftUI / SwiftData の deprecate 警告が増える可能性 (ビルド成功には影響しないはず)
+> 方針変更経緯 (2026-05-01): 当初 Phase7 は本番サーバ向け Release ビルドでの動作確認を想定していたが、LAN サーバを叩く構成での挙動を先に確認したい意向に切替。`xcode-archive@6` の `xcconfig_content` で API_BASE_URL を上書きする「方法 B」(専用 Workflow) は採らず、**`project.yml` の Release configuration を直接書き換える「方法 A」**で進める (一時的な検証目的のため、bitrise.yml に Workflow を増やすほどでもない)。確認完了後 Phase8 Step1 で本番 URL に戻す。
 
-### Phase7 実機 TestFlight 動作確認
+#### Step1 Release の `API_BASE_URL` を LAN URL に切替 (✅ 完了 2026-05-01)
 
-- 前提: `https://photorans.chobi.me/admin` に到達できること (testflight.md Phase4-5 と同条件)
-- iPhone の TestFlight アプリでネイティブ photorans をインストール
-- LAN 内: 撮影 → 翻訳 → 一覧 → 詳細
-- LAN 外 (モバイル回線): 同フロー
+- `ios/project.yml` の `configs.Release.API_BASE_URL` を `https://photorans.chobi.me` → `http://10.0.1.137:3000` に変更
+- ATS は Phase3 で `NSExceptionDomains` に `10.0.1.137` の HTTP 許可を追加済みのため追加対応不要 (Info.plist 触らず)
+- `cd ios && xcodegen generate` で `.xcodeproj` を再生成 (pbxproj の差分は Release config の `API_BASE_URL` 行のみ)
+- コミット予定メッセージ: `Phase7-1 Switch Release API_BASE_URL to LAN for TestFlight verification`
+
+#### Step2 タグ `v0.1.1` push → release Workflow → TestFlight 配布
+
+- `git tag v0.1.1 && git push origin v0.1.1` で `release` Workflow をトリガ
+- Bitrise の `release` Workflow が緑化、`.ipa` が `deploy-to-itunesconnect-application-loader@1` で TestFlight Internal Testing に到達
+- iPhone の TestFlight アプリで `v0.1.1` をインストール
+
+> Internal Testing は Apple Review 不要なので、Release 構成でも HTTP の LAN URL を埋め込んだビルドを配布可能。
+
+#### Step3 LAN 内動作確認
+
+- iPhone を WSL2 ホストと同じ Wi-Fi に接続 (`10.0.1.137` に到達できること)
+- 撮影 → 翻訳 (`/translate`) が成功 → 履歴一覧に反映 → 詳細表示 → コピー / 削除
+- WSL2 サーバの `/admin` (LAN 内アクセス) に履歴が積まれること
+- 既存 TODO の AF (近接 / タップ) が効くこと、横向き撮影時の orientation 一貫性
+
+### Phase8 本番サーバ接続版の再確認 + 旧 RN クライアント撤去
+
+#### Step1 Release の `API_BASE_URL` を本番に戻す + 再配布
+
+- `ios/project.yml` の Release `API_BASE_URL` を `https://photorans.chobi.me` に戻し、`xcodegen generate` → コミット
+- タグ `v0.1.2` push で `release` Workflow → TestFlight 配布
+- iPhone の TestFlight で `v0.1.2` に更新
+
+#### Step2 LAN 外 (本番) 動作確認
+
+- iPhone をモバイル回線 (Wi-Fi off) に切替
+- 撮影 → 翻訳 → 一覧 → 詳細フローが本番サーバ向けでも通ること
 - `https://photorans.chobi.me/admin` に履歴が積まれること
-- 既存 TODO の AF / 横向き orientation 問題が解消されていること
 
-### Phase8 旧 RN クライアントの撤去
+#### Step3 旧 RN クライアント撤去
 
-- 並走期間 (Phase7 動作確認 + 1〜2 週間) を経て `client/` を削除
+- 並走期間 (Phase7 + Phase8 Step1-2 動作確認 + 1〜2 週間) を経て `client/` を削除
 - `CLAUDE.md` の RN 関連記述を整理し、Bitrise / iOS ネイティブのビルド・配布手順に置き換える
 - `docs/plans/testflight-vision-camera-release-fix.md` は archive へ (不要になる)
 - `docs/plans/testflight.md` も EAS 前提なので archive へ移動 (Bitrise 版の手順は CLAUDE.md に集約)

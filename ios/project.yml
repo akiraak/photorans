@@ -24,7 +24,7 @@ settings:
       API_BASE_URL: http://10.0.1.137:3000
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
     Release:
-      API_BASE_URL: https://photorans.chobi.me
+      API_BASE_URL: http://10.0.1.137:3000
 
 targets:
   Photorans:

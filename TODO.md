@@ -14,17 +14,24 @@
   - [x] Phase5 履歴一覧 + 詳細画面
     - [x] Step1 履歴一覧 + 詳細画面 + スワイプ削除
     - [x] Step2 撮影直後の履歴タブ自動遷移 + 結果 sheet 撤去
-  - [ ] Phase6 Bitrise コード署名 + TestFlight 提出 Workflow
+  - [x] Phase6 Bitrise コード署名 + TestFlight 提出 Workflow
     - [x] Step1 App Store Connect API Key 発行 + Bitrise への接続 (Akira さん作業) — Workspace の Apple service connection に登録済み
     - [x] Step2 コード署名方式の決定 — **Manual** (Distribution `.p12` + App Store Provisioning Profile を `Project Setting → Code signing` にアップロード) に確定
     - [x] Step3 `release` Workflow を `bitrise.yml` に追加 + `Info.plist` に `ITSAppUsesNonExemptEncryption: false` 追加
-    - [ ] Step4 タグ `v0.1.0` push で初回 release ビルド → TestFlight 着信確認
+    - [x] Step4 タグ `v0.1.0` push で初回 release ビルド → TestFlight 着信確認
       - [x] Sub1 初回 release ビルド実行 → Apple altool バリデーションで 3 つのエラーが判明 (AppIcon 不在 / `CFBundleIconName` 不在 / iOS 18 SDK でビルド)
       - [x] Sub2 AppIcon Asset Catalog 追加 (`ios/Photorans/Resources/Assets.xcassets/AppIcon.appiconset/`、`client/assets/icon.png` 1024×1024 を流用)
       - [x] Sub3 Bitrise stack を `osx-xcode-16.0.x` → `osx-xcode-26.4.x` に bump
-      - [ ] Sub4 タグ `v0.1.0` を打ち直して再ビルド → TestFlight 着信確認
-  - [ ] Phase7 実機 TestFlight 動作確認
-  - [ ] Phase8 旧 RN クライアントの撤去
+      - [x] Sub4 タグ `v0.1.0` を打ち直して再ビルド → TestFlight 着信確認 (release Workflow 緑、iPhone TestFlight でインストール成功)
+  - [ ] Phase7 LAN サーバ接続版を TestFlight で実機確認
+    - [x] Step1 Release の `API_BASE_URL` を `http://10.0.1.137:3000` に切替 + xcodegen generate + コミット
+    - [ ] Step2 タグ `v0.1.1` push → `release` Workflow → TestFlight 配布
+    - [ ] Step3 iPhone を 10.0.1.137 と同じ Wi-Fi に繋いで 撮影 → 翻訳 → 一覧 → 詳細、AF / 横向き orientation 確認
+  - [ ] Phase8 本番サーバ接続版の再確認 + 旧 RN クライアント撤去
+    - [ ] Step1 Release の `API_BASE_URL` を `https://photorans.chobi.me` に戻す + タグ `v0.1.2` で TestFlight 再配布
+    - [ ] Step2 LAN 外 (モバイル回線) で本番サーバ向けに同フロー確認 + `/admin` に履歴反映を確認
+    - [ ] Step3 `client/` 削除 + `CLAUDE.md` の RN 関連記述を Bitrise/iOS ネイティブ向けに整理 + 旧プラン (`testflight.md`, `testflight-vision-camera-release-fix.md`) を archive へ
+
 - [ ] TestFlight での実行 [plan](docs/plans/testflight.md)
   - [x] Phase4-1 production プロファイルと API URL 切替
   - [x] Phase4-2 App Store Connect アプリレコード作成
