@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0166FA1C8C1575F994A33B7E /* CameraViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */; };
+		2008469B7F62836744DD16A2 /* HistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4656EE73399C074F9AC63880 /* HistoryEntry.swift */; };
 		3A5C478A7A1295D294394C35 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */; };
 		66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD85F3512D949ED95929BAAC /* RootView.swift */; };
 		672E4E2A66EC80D3697D6FFA /* PhotoransTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */; };
@@ -34,6 +35,7 @@
 		0DEDC83685303F8329092022 /* TranslateAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateAPI.swift; sourceTree = "<group>"; };
 		225655C9951E5F556341B619 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		345F43A959F869B4B3857F03 /* Photorans.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Photorans.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4656EE73399C074F9AC63880 /* HistoryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntry.swift; sourceTree = "<group>"; };
 		4E927D98011248B6BA229BA0 /* TranslateResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateResultView.swift; sourceTree = "<group>"; };
 		5D19083941DF31ECD70EC886 /* PhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorage.swift; sourceTree = "<group>"; };
 		64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 			children = (
 				209E3B7E95D1B97412E1AF59 /* Features */,
 				1181249EDF30851F8D28E8B7 /* Networking */,
+				AEA0554C0D4D90A8C3F69DE9 /* Storage */,
 				225655C9951E5F556341B619 /* Info.plist */,
 				FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */,
 				BD85F3512D949ED95929BAAC /* RootView.swift */,
@@ -102,6 +105,14 @@
 				4E927D98011248B6BA229BA0 /* TranslateResultView.swift */,
 			);
 			path = Camera;
+			sourceTree = "<group>";
+		};
+		AEA0554C0D4D90A8C3F69DE9 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				4656EE73399C074F9AC63880 /* HistoryEntry.swift */,
+			);
+			path = Storage;
 			sourceTree = "<group>";
 		};
 		EFDD173D50D19CEFBE223F09 = {
@@ -191,6 +202,7 @@
 				785CB5BC3727E0AD1BE08B94 /* CameraSession.swift in Sources */,
 				9648360EAC47CC47E0E877DA /* CameraView.swift in Sources */,
 				0166FA1C8C1575F994A33B7E /* CameraViewModel.swift in Sources */,
+				2008469B7F62836744DD16A2 /* HistoryEntry.swift in Sources */,
 				F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */,
 				A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */,
 				66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */,

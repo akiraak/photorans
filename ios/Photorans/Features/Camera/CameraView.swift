@@ -1,7 +1,9 @@
 import AVFoundation
+import SwiftData
 import SwiftUI
 
 struct CameraView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel = CameraViewModel()
     @State private var errorAlertMessage: String?
     @State private var focusReticle: FocusReticleState?
@@ -103,7 +105,7 @@ struct CameraView: View {
 
     private var shutterButton: some View {
         Button {
-            Task { await viewModel.capturePhoto() }
+            Task { await viewModel.capturePhoto(modelContext: modelContext) }
         } label: {
             ZStack {
                 Circle()
@@ -198,4 +200,5 @@ private struct FocusReticleView: View {
 
 #Preview {
     CameraView()
+        .modelContainer(for: HistoryEntry.self, inMemory: true)
 }

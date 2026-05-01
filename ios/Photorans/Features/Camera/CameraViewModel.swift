@@ -1,5 +1,6 @@
 import AVFoundation
 import Observation
+import SwiftData
 import SwiftUI
 import UIKit
 
@@ -40,16 +41,17 @@ final class CameraViewModel {
         stopTrackingOrientation()
     }
 
-    func capturePhoto() async {
+    func capturePhoto(modelContext: ModelContext) async {
         guard permissionStatus == .authorized, !isCapturing, !isTranslating else { return }
         isCapturing = true
 
         let angle = currentRotationAngle()
         let captured: Data
+        let saved: SavedPhoto
         do {
             captured = try await camera.capturePhoto(rotationAngle: angle)
-            let url = try PhotoStorage.save(jpegData: captured)
-            lastSavedURL = url
+            saved = try PhotoStorage.save(jpegData: captured)
+            lastSavedURL = saved.absoluteURL
             lastThumbnail = UIImage(data: captured)
         } catch {
             lastError = error.localizedDescription
@@ -58,16 +60,37 @@ final class CameraViewModel {
         }
         isCapturing = false
 
-        await translate(jpegData: captured)
+        await translate(jpegData: captured, savedPhoto: saved, modelContext: modelContext)
     }
 
-    private func translate(jpegData: Data) async {
+    private func translate(jpegData: Data, savedPhoto: SavedPhoto, modelContext: ModelContext) async {
         isTranslating = true
         defer { isTranslating = false }
         do {
-            lastResult = try await TranslateAPI.shared.translate(jpegData: jpegData)
+            let response = try await TranslateAPI.shared.translate(jpegData: jpegData)
+            lastResult = response
+            persistHistoryEntry(response: response, savedPhoto: savedPhoto, modelContext: modelContext)
         } catch {
             lastError = error.localizedDescription
+        }
+    }
+
+    private func persistHistoryEntry(
+        response: TranslateResponse,
+        savedPhoto: SavedPhoto,
+        modelContext: ModelContext
+    ) {
+        let entry = HistoryEntry(
+            imagePath: savedPhoto.relativePath,
+            originalText: response.originalText,
+            translatedText: response.translatedText,
+            model: response.model
+        )
+        modelContext.insert(entry)
+        do {
+            try modelContext.save()
+        } catch {
+            lastError = "履歴の保存に失敗しました: \(error.localizedDescription)"
         }
     }
 

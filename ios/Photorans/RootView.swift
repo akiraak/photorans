@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct RootView: View {
@@ -33,4 +34,5 @@ private struct HistoryTabView: View {
 
 #Preview {
     RootView()
+        .modelContainer(for: HistoryEntry.self, inMemory: true)
 }
