@@ -11,7 +11,9 @@
     - [x] Step3 サムネ表示 + フォーカス改善 (近接 AF / タップ AF)
   - [x] Phase3 ネットワーク層 (`/translate` 連携)
   - [x] Phase4 ローカル DB (SwiftData)
-  - [ ] Phase5 履歴一覧 + 詳細画面
+  - [x] Phase5 履歴一覧 + 詳細画面
+    - [x] Step1 履歴一覧 + 詳細画面 + スワイプ削除
+    - [x] Step2 撮影直後の履歴タブ自動遷移 + 結果 sheet 撤去
   - [ ] Phase6 Bitrise コード署名 + TestFlight 提出 Workflow
   - [ ] Phase7 実機 TestFlight 動作確認
   - [ ] Phase8 旧 RN クライアントの撤去

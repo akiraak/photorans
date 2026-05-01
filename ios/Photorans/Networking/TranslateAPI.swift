@@ -1,6 +1,6 @@
 import Foundation
 
-struct TranslateResponse: Decodable, Sendable {
+struct TranslateResponse: Decodable, Equatable, Sendable {
     let originalText: String
     let translatedText: String
     let model: String

@@ -2,32 +2,28 @@ import SwiftData
 import SwiftUI
 
 struct RootView: View {
+    enum Tab: Hashable {
+        case camera
+        case history
+    }
+
+    @State private var selectedTab: Tab = .camera
+
     var body: some View {
-        TabView {
-            CameraView()
+        TabView(selection: $selectedTab) {
+            CameraView(onTranslated: { selectedTab = .history })
                 .tabItem {
                     Label("カメラ", systemImage: "camera")
                 }
+                .tag(Tab.camera)
 
-            HistoryTabView()
-                .tabItem {
-                    Label("履歴", systemImage: "list.bullet")
-                }
-        }
-    }
-}
-
-private struct HistoryTabView: View {
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: "list.bullet.rectangle")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.tint)
-                Text("履歴 (Phase5 で実装)")
-                    .font(.title2)
+            NavigationStack {
+                HistoryListView()
             }
-            .navigationTitle("履歴")
+            .tabItem {
+                Label("履歴", systemImage: "list.bullet")
+            }
+            .tag(Tab.history)
         }
     }
 }

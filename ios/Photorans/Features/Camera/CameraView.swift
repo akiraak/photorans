@@ -3,6 +3,8 @@ import SwiftData
 import SwiftUI
 
 struct CameraView: View {
+    var onTranslated: () -> Void = {}
+
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = CameraViewModel()
     @State private var errorAlertMessage: String?
@@ -51,21 +53,17 @@ struct CameraView: View {
                 viewModel.lastError = nil
             }
         }
+        .onChange(of: viewModel.lastResult) { _, newValue in
+            if newValue != nil {
+                viewModel.lastResult = nil
+                onTranslated()
+            }
+        }
         .alert("エラー", isPresented: errorAlertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorAlertMessage ?? "")
         }
-        .sheet(item: resultBinding) { result in
-            TranslateResultView(result: result)
-        }
-    }
-
-    private var resultBinding: Binding<TranslateResultItem?> {
-        Binding(
-            get: { viewModel.lastResult.map(TranslateResultItem.init) },
-            set: { if $0 == nil { viewModel.lastResult = nil } }
-        )
     }
 
     private var translatingOverlay: some View {
