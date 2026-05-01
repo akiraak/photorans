@@ -128,6 +128,13 @@ struct CameraView: View {
         }
     }
 
+    /// `lastValidRotationAngle` (capture 用 90/0/180) を SwiftUI の `.rotationEffect` で
+    /// アイコン/文字を「世界の上」に向けるための回転角に変換。
+    /// portrait=0° / landscapeLeft=-90° / landscapeRight=90°。
+    private var iconRotationDegrees: Double {
+        Double(viewModel.lastValidRotationAngle) - 90
+    }
+
     private var translatingOverlay: some View {
         VStack(spacing: 12) {
             ProgressView()
@@ -139,6 +146,8 @@ struct CameraView: View {
         }
         .padding(24)
         .background(.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 16))
+        .rotationEffect(.degrees(iconRotationDegrees))
+        .animation(.easeInOut(duration: 0.2), value: iconRotationDegrees)
     }
 
     private var errorAlertBinding: Binding<Bool> {
@@ -168,6 +177,8 @@ struct CameraView: View {
         }
         .disabled(viewModel.isCapturing || viewModel.isTranslating)
         .accessibilityLabel("撮影")
+        .rotationEffect(.degrees(iconRotationDegrees))
+        .animation(.easeInOut(duration: 0.2), value: iconRotationDegrees)
     }
 
     private var permissionDeniedOverlay: some View {
