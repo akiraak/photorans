@@ -1,0 +1,30 @@
+# server 配下の生成物・ローカル状態
+server/node_modules/
+server/dist/
+server/data/
+server/.env
+server/.env.local
+
+# 本サーバビルドに不要なクライアント・周辺コード
+client/
+ios/
+vibeboard/
+debug-ss/
+
+# git / エディタ
+.git/
+.gitignore
+.vscode/
+.claude/
+
+# ドキュメント
+docs/
+*.md
+LICENSE
+
+# シェルスクリプト類
+*.sh
+bitrise.yml
+
+# OS
+.DS_Store

@@ -1,7 +1,9 @@
 import Database from 'better-sqlite3';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+
+const MAX_HISTORY_RECORDS = 10_000;
 
 export const dataDir = resolve(process.env.DATA_DIR ?? './data');
 const imagesDir = join(dataDir, 'images');
@@ -28,6 +30,32 @@ const insertStmt = db.prepare(`
   INSERT INTO history (id, createdAt, imagePath, imageMimeType, originalText, translatedText, model)
   VALUES (@id, @createdAt, @imagePath, @imageMimeType, @originalText, @translatedText, @model)
 `);
+
+const countStmt = db.prepare(`SELECT COUNT(*) AS c FROM history`);
+const oldestStmt = db.prepare(`
+  SELECT id, imagePath FROM history ORDER BY createdAt ASC, id ASC LIMIT ?
+`);
+const deleteByIdStmt = db.prepare(`DELETE FROM history WHERE id = ?`);
+
+function pruneOldHistory(): void {
+  const total = (countStmt.get() as { c: number }).c;
+  if (total <= MAX_HISTORY_RECORDS) return;
+
+  const excess = total - MAX_HISTORY_RECORDS;
+  const victims = oldestStmt.all(excess) as Array<{ id: string; imagePath: string }>;
+
+  for (const v of victims) {
+    deleteByIdStmt.run(v.id);
+    try {
+      unlinkSync(join(dataDir, v.imagePath));
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT') {
+        console.warn(`failed to unlink old image ${v.imagePath}:`, err);
+      }
+    }
+  }
+}
 
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -67,6 +95,8 @@ export function saveHistory(input: SaveHistoryInput): SaveHistoryResult {
     translatedText: input.translatedText,
     model: input.model,
   });
+
+  pruneOldHistory();
 
   return { id, createdAt, imagePath };
 }
