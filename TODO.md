@@ -1,14 +1,11 @@
 # TODO
 
-- [ ] TestFlight での実行 [plan](docs/plans/testflight.md)
-  - [x] Phase4-1 production プロファイルと API URL 切替
-  - [x] Phase4-2 App Store Connect アプリレコード作成
-  - [ ] Phase4-3 production ビルド
-    - [ ] VisionCamera Release WMO クラッシュ回避 [plan](docs/plans/testflight-vision-camera-release-fix.md)
-      - [ ] Step1 config plugin 作成
-      - [ ] Step2 production ビルド再実行
-  - [ ] Phase4-4 TestFlight 提出
-  - [ ] Phase4-5 実機 TestFlight 動作確認
-- [ ] カメラを横にして撮影したらサーバに投げる画像やクライアントでの表示も横にする（撮影直後 / 表示時 / 送信時の各層で EXIF orientation を一貫させる）
 - [ ] 利用トークンと料金を管理画面に表示
-- [ ] カメラのフォーカスが合わない（まず `device.minimumFocusDistance` から逆算した自動 zoom で近接被写体の合焦を改善する。それでも不足なら iOS のみ Native カメラ Module 化のスパイクを別途検討）
+- [ ] 横向きの写真を撮りたい / 撮影範囲の WYSIWYG 化 ([plan](docs/plans/landscape-capture.md))
+  - [ ] Phase1 撮影範囲 WYSIWYG 化 (`videoGravity = .resizeAspect` + portrait レイアウト再設計)
+  - [ ] Phase2 プレビュー回転対応 (`CameraPreviewView` の connection 角度追従)
+  - [ ] Phase3 撮影 UI の回転追従 + landscape レイアウト (シャッター位置とアイコン向き)
+  - [ ] Phase4 履歴詳細の画像表示をアスペクト比追従に変更
+  - [ ] Phase5 EXIF orientation の正常性検証 (必要に応じ修正)
+  - [ ] Phase6 仕上げ (リグレッション確認、TODO クローズ)
+- [ ] カメラの機能強化の調査
