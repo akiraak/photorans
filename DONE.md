@@ -1,5 +1,9 @@
 # DONE
 
+## 2026-05
+
+- 2026-05-01: iOS ネイティブで作り直す ([plan archive](docs/plans/archive/ios-native-rewrite.md)) — Expo + RN + VisionCamera 構成を Swift / SwiftUI / AVFoundation / SwiftData フルネイティブに置換 (Phase1-7 完了)。XcodeGen ベースの `ios/Photorans.xcodeproj` を WSL2 で生成・コミット、Bitrise (Hobby plan, Manual signing) で `primary` (シミュレータ) と `release` (タグ `v*` で `xcode-archive@6` → TestFlight) Workflow を運用。AVFoundation で AVCaptureSession + 近接 AF (`autoFocusRangeRestriction = .near`) + タップ AF + サムネ + EXIF orientation 計算、SwiftData (`HistoryEntry`) で永続化、`URLSession` + multipart 自前構築の `/translate` クライアント、履歴一覧 + 詳細 + スワイプ削除 + 撮影直後の自動タブ遷移を実装。TestFlight 配布で altool が要求した AppIcon Asset Catalog 追加 + Bitrise stack を `osx-xcode-26.4.x` に bump して iOS 26 SDK 必須化に対応 (`v0.1.0`)。LAN URL 検証で Anthropic Vision の 5 MiB 上限超過が発覚、`ImageCompressor` で base64 サイズ前提の段階的圧縮 (長辺 ≤ 2048px → quality 0.8/0.65/0.5、target 1.5 MB raw ≒ 2 MB base64) を実装し `v0.1.3` で実機 OK (`v0.1.1` → `v0.1.3`)。Phase8 (本番 URL 復帰 + 旧 RN クライアント `client/` 撤去 + 旧プラン archive) は本番運用着手時に着手するため未実施でクローズ
+
 ## 2026-04
 
 - 2026-04-30: Phase3 ネットワーク層 (`/translate` 連携) (`Photorans/Networking/TranslateAPI.swift` を新設、`actor TranslateAPI` + `URLSession` で multipart/form-data クライアントを実装。`Bundle.main` 経由で Info.plist の `API_BASE_URL` を読み、60s タイムアウト + `LocalizedError` 準拠の日本語メッセージ。ATS は当初プランの `NSAllowsArbitraryLoads`(Debug) から、より制限的な `NSExceptionDomains` 方式に変更し `10.0.1.137` のみ HTTP を許可。`CameraViewModel` に `isTranslating` / `lastResult` を追加して撮影成功後に自動翻訳、暫定 `TranslateResultView` (sheet) に原文/訳文/モデルを表示。Phase4-5 で SwiftData + 履歴 UI に置換予定。WSL2 で `xcodegen generate` 成功し Networking グループが pbxproj に登録された。Bitrise ビルドはコミット → push 後に確認)

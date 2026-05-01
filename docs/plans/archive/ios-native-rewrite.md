@@ -2,7 +2,7 @@
 
 photorans のクライアントを Expo + React Native + `react-native-vision-camera` 構成から、Swift によるフルネイティブ iOS アプリに作り直す。サーバ (`server/`, Hono + Claude Sonnet 4.6) はそのまま流用する。
 
-ステータス: **実装中 (Phase1〜7 完了 / 残: Phase8 = 本番 URL 復帰 + 旧 RN 撤去 2026-05-01)** / 開始日: 2026-04-30
+ステータス: **完了 (Phase1〜7 完了 / Phase8 = 本番 URL 復帰 + 旧 RN 撤去は本番運用着手時にクローズ、2026-05-01)** / 開始日: 2026-04-30
 
 ## 目的・背景
 
