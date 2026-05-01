@@ -15,10 +15,14 @@
     - [x] Step1 履歴一覧 + 詳細画面 + スワイプ削除
     - [x] Step2 撮影直後の履歴タブ自動遷移 + 結果 sheet 撤去
   - [ ] Phase6 Bitrise コード署名 + TestFlight 提出 Workflow
-    - [ ] Step1 App Store Connect API Key 発行 + Bitrise への接続 (Akira さん作業)
-    - [ ] Step2 コード署名方式の決定 (Automatic Code Signing 第一候補)
-    - [ ] Step3 `release` Workflow を `bitrise.yml` に追加 + `Info.plist` に `ITSAppUsesNonExemptEncryption: false` 追加
+    - [x] Step1 App Store Connect API Key 発行 + Bitrise への接続 (Akira さん作業) — Workspace の Apple service connection に登録済み
+    - [x] Step2 コード署名方式の決定 — **Manual** (Distribution `.p12` + App Store Provisioning Profile を `Project Setting → Code signing` にアップロード) に確定
+    - [x] Step3 `release` Workflow を `bitrise.yml` に追加 + `Info.plist` に `ITSAppUsesNonExemptEncryption: false` 追加
     - [ ] Step4 タグ `v0.1.0` push で初回 release ビルド → TestFlight 着信確認
+      - [x] Sub1 初回 release ビルド実行 → Apple altool バリデーションで 3 つのエラーが判明 (AppIcon 不在 / `CFBundleIconName` 不在 / iOS 18 SDK でビルド)
+      - [x] Sub2 AppIcon Asset Catalog 追加 (`ios/Photorans/Resources/Assets.xcassets/AppIcon.appiconset/`、`client/assets/icon.png` 1024×1024 を流用)
+      - [ ] Sub3 Bitrise stack を `osx-xcode-16.0.x` → `osx-xcode-26.4.x` に bump
+      - [ ] Sub4 タグ `v0.1.0` を打ち直して再ビルド → TestFlight 着信確認
   - [ ] Phase7 実機 TestFlight 動作確認
   - [ ] Phase8 旧 RN クライアントの撤去
 - [ ] TestFlight での実行 [plan](docs/plans/testflight.md)

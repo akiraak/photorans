@@ -47,6 +47,13 @@ Claude Code 側の運用ルール:
 - 新たに発生したタスクは `TODO.md` へ追記、完了時は `DONE.md` へ移送する
 - 作業着手前のプラン作成や、TODO / DONE の更新手順の詳細は次節「作業着手ルール」に従う
 
+## Bitrise 用語
+
+本リポジトリの CI は Bitrise を利用する。Bitrise UI の階層は **Workspace > Project** であり、`photorans` は Project 名。
+
+- **App という呼称は使わない**（Bitrise UI には存在しない概念）。Claude Code は説明・案内文で必ず "Project" / "Workspace" を使うこと
+- 設定の置き場所も同様: `Project settings`、`Workspace settings`。`App settings` という言い方はしない
+
 ## 作業着手ルール
 
 作業（実装・調査いずれも）を始めるときは、コードに手を入れる前に以下を行う。

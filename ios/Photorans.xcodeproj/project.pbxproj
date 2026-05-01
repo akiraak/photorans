@@ -14,6 +14,7 @@
 		66BA5A7DBE97F9411BB16C33 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD85F3512D949ED95929BAAC /* RootView.swift */; };
 		672E4E2A66EC80D3697D6FFA /* PhotoransTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */; };
 		6E964864F9E07A2FD2FE352D /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91EDBE037FDFC828DEFDA54 /* HistoryListView.swift */; };
+		70033C5A31F78A77F590AFF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97403F72A81FDB08A684E400 /* Assets.xcassets */; };
 		785CB5BC3727E0AD1BE08B94 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6F0DBE480C684D580E5E88 /* CameraSession.swift */; };
 		9648360EAC47CC47E0E877DA /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0FB63D09D04136FEACD95F /* CameraView.swift */; };
 		A8B81DB965B26ADD4E751F3A /* PhotoransApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */; };
@@ -41,6 +42,7 @@
 		64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
 		8B6F0DBE480C684D580E5E88 /* CameraSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSession.swift; sourceTree = "<group>"; };
+		97403F72A81FDB08A684E400 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B806C24E0B8EB57F3B3407C1 /* PhotoransTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoransTests.swift; sourceTree = "<group>"; };
 		B82FD7D08561DB2373558CDA /* HistoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryDetailView.swift; sourceTree = "<group>"; };
 		BD85F3512D949ED95929BAAC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 			children = (
 				209E3B7E95D1B97412E1AF59 /* Features */,
 				1181249EDF30851F8D28E8B7 /* Networking */,
+				EC83BCDDDBF4214BC50BED1A /* Resources */,
 				AEA0554C0D4D90A8C3F69DE9 /* Storage */,
 				225655C9951E5F556341B619 /* Info.plist */,
 				FF74E1C62D50B4CC496B75EA /* PhotoransApp.swift */,
@@ -126,6 +129,14 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
+		EC83BCDDDBF4214BC50BED1A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				97403F72A81FDB08A684E400 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		EFDD173D50D19CEFBE223F09 = {
 			isa = PBXGroup;
 			children = (
@@ -161,6 +172,7 @@
 			buildConfigurationList = 5CC062DE09C3238AE084B248 /* Build configuration list for PBXNativeTarget "Photorans" */;
 			buildPhases = (
 				43A1879A95567DF7FF67B1E7 /* Sources */,
+				34A795F0A6BE47150C2C32FD /* Resources */,
 			);
 			buildRules = (
 			);
@@ -203,6 +215,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		34A795F0A6BE47150C2C32FD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70033C5A31F78A77F590AFF5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		43A1879A95567DF7FF67B1E7 /* Sources */ = {
