@@ -28,7 +28,10 @@ struct CameraView: View {
                     ZStack {
                         CameraPreviewView(
                             session: viewModel.camera.session,
-                            rotationAngle: viewModel.lastValidRotationAngle
+                            rotationAngle: viewModel.lastValidRotationAngle,
+                            onApplyState: { state in
+                                viewModel.debugConnectionState = state
+                            }
                         ) { layerPoint, devicePoint in
                             viewModel.focus(at: devicePoint)
                             showFocusReticle(at: layerPoint)
@@ -104,6 +107,7 @@ struct CameraView: View {
             Text("rot: \(Int(viewModel.lastValidRotationAngle))°")
             Text("dev: \(orientationName(debugDeviceOrientation))")
             Text("upd: \(viewModel.debugUpdateCount)")
+            Text(viewModel.debugConnectionState)
         }
         .font(.system(size: 11, design: .monospaced))
         .padding(8)

@@ -21,6 +21,9 @@ final class CameraViewModel {
     /// Phase2 Step2-3 デバッグ用: orientation observer が何度呼ばれたかを記録。
     /// Phase3 着手時に削除する。
     var debugUpdateCount: Int = 0
+    /// Phase3 検証用: CameraPreviewView の applyRotationAngle 内で観測した preview connection の状態。
+    /// 「conn:<実値>° sup:Y/N」または「noConn」。Phase3-3 検証完了で削除。
+    var debugConnectionState: String = "?"
 
     private var orientationObserver: NSObjectProtocol?
 
