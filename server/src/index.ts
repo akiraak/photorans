@@ -54,6 +54,11 @@ app.post('/translate', async (c) => {
   const base64 = imageBytes.toString('base64');
   const imageMimeType = image.type as SupportedImageType;
 
+  console.log(
+    `[translate] received: type=${imageMimeType} size=${imageBytes.length} bytes (base64=${base64.length} bytes)`,
+  );
+
+  const startedAt = Date.now();
   let response;
   try {
     response = await anthropic.messages.create({
@@ -113,6 +118,10 @@ app.post('/translate', async (c) => {
     console.error('unexpected error during translate:', err);
     return c.json({ error: 'translation failed' }, 500);
   }
+  const elapsedMs = Date.now() - startedAt;
+  console.log(
+    `[translate] anthropic ok: duration=${elapsedMs}ms input_tokens=${response.usage.input_tokens} output_tokens=${response.usage.output_tokens}`,
+  );
 
   const textBlock = response.content.find((b) => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
@@ -133,14 +142,19 @@ app.post('/translate', async (c) => {
     return c.json({ error: 'unexpected response from model' }, 502);
   }
 
+  console.log(
+    `[translate] result: original="${previewText(parsed.originalText)}" translated="${previewText(parsed.translatedText)}"`,
+  );
+
   try {
-    saveHistory({
+    const saved = saveHistory({
       imageBytes,
       imageMimeType,
       originalText: parsed.originalText,
       translatedText: parsed.translatedText,
       model: MODEL_ID,
     });
+    console.log(`[translate] history saved: id=${saved.id}`);
   } catch (err) {
     console.error('failed to save translation history:', err);
   }
@@ -151,6 +165,11 @@ app.post('/translate', async (c) => {
     model: MODEL_ID,
   });
 });
+
+function previewText(s: string, max = 60): string {
+  const normalized = s.replace(/\s+/g, ' ').trim();
+  return normalized.length > max ? `${normalized.slice(0, max)}…` : normalized;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
