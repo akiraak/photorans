@@ -13,7 +13,6 @@ final class CameraViewModel {
     var isTranslating: Bool = false
     var lastError: String?
     var lastSavedURL: URL?
-    var lastThumbnail: UIImage?
     var lastResult: TranslateResponse?
 
     private var orientationObserver: NSObjectProtocol?
@@ -53,7 +52,6 @@ final class CameraViewModel {
             compressed = ImageCompressor.compressForUpload(jpegData: captured)
             saved = try PhotoStorage.save(jpegData: compressed)
             lastSavedURL = saved.absoluteURL
-            lastThumbnail = UIImage(data: compressed)
         } catch {
             lastError = error.localizedDescription
             isCapturing = false

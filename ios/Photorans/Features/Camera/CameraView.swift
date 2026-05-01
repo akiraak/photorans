@@ -15,24 +15,41 @@ struct CameraView: View {
             Color.black
                 .ignoresSafeArea()
 
-            CameraPreviewView(session: viewModel.camera.session) { layerPoint, devicePoint in
-                viewModel.focus(at: devicePoint)
-                showFocusReticle(at: layerPoint)
-            }
-            .ignoresSafeArea()
+            GeometryReader { geometry in
+                let previewWidth = geometry.size.width
+                // sessionPreset = .photo は 4:3 アスペクト。portrait 画面では画面幅にフィットさせ、
+                // 高さ = 幅 × 4/3 でプレビューを上部に貼る。残った下部余白に bottomControls を置く。
+                let previewHeight = previewWidth * 4.0 / 3.0
 
-            if let reticle = focusReticle {
-                FocusReticleView()
-                    .position(reticle.point)
-                    .id(reticle.id)
-                    .transition(.opacity)
+                VStack(spacing: 0) {
+                    ZStack {
+                        CameraPreviewView(session: viewModel.camera.session) { layerPoint, devicePoint in
+                            viewModel.focus(at: devicePoint)
+                            showFocusReticle(at: layerPoint)
+                        }
+
+                        if let reticle = focusReticle {
+                            FocusReticleView()
+                                .position(reticle.point)
+                                .id(reticle.id)
+                                .transition(.opacity)
+                        }
+                    }
+                    .frame(width: previewWidth, height: previewHeight)
+                    .clipped()
+
+                    ZStack {
+                        if viewModel.permissionStatus == .authorized {
+                            shutterButton
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
 
             switch viewModel.permissionStatus {
             case .denied, .restricted:
                 permissionDeniedOverlay
-            case .authorized:
-                bottomControls
             default:
                 EmptyView()
             }
@@ -86,21 +103,6 @@ struct CameraView: View {
         )
     }
 
-    private var bottomControls: some View {
-        VStack {
-            Spacer()
-            ZStack {
-                shutterButton
-                HStack {
-                    thumbnailView
-                    Spacer()
-                }
-                .padding(.horizontal, 28)
-            }
-            .padding(.bottom, 40)
-        }
-    }
-
     private var shutterButton: some View {
         Button {
             Task { await viewModel.capturePhoto(modelContext: modelContext) }
@@ -121,24 +123,6 @@ struct CameraView: View {
         }
         .disabled(viewModel.isCapturing || viewModel.isTranslating)
         .accessibilityLabel("撮影")
-    }
-
-    @ViewBuilder
-    private var thumbnailView: some View {
-        if let image = viewModel.lastThumbnail {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 56, height: 56)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(.white, lineWidth: 1.5)
-                )
-                .accessibilityLabel("直前の撮影")
-        } else {
-            Color.clear.frame(width: 56, height: 56)
-        }
     }
 
     private var permissionDeniedOverlay: some View {

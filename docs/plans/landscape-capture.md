@@ -101,8 +101,8 @@ ScrollView 内なので高さが伸びても問題ない。プレースホルダ
 ## 影響範囲
 
 - `ios/Photorans/Features/Camera/CameraPreviewView.swift` — `videoGravity` を `.resizeAspect` に変更、`previewLayer.connection.videoRotationAngle` を端末向きで更新する仕組みを追加
-- `ios/Photorans/Features/Camera/CameraView.swift` — preview と bottomControls の配置を分離 (GeometryReader で portrait / landscape のレイアウトを切り替え)、シャッター / サムネに `.rotationEffect` を適用
-- `ios/Photorans/Features/Camera/CameraViewModel.swift` — 既存の orientation observer を `@Observable var lastValidRotationAngle: CGFloat` として外部公開。`portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込み、`portraitUpsideDown` / `faceUp` / `faceDown` / `unknown` は無視 (直前値維持)。capture 用とアイコン回転用でこの値を共用
+- `ios/Photorans/Features/Camera/CameraView.swift` — preview と bottomControls の配置を分離 (GeometryReader で portrait / landscape のレイアウトを切り替え)、シャッターに `.rotationEffect` を適用。直前撮影サムネ (`thumbnailView`) はユーザー判断で削除する
+- `ios/Photorans/Features/Camera/CameraViewModel.swift` — 既存の orientation observer を `@Observable var lastValidRotationAngle: CGFloat` として外部公開。`portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込み、`portraitUpsideDown` / `faceUp` / `faceDown` / `unknown` は無視 (直前値維持)。capture 用とアイコン回転用でこの値を共用。`lastThumbnail` プロパティはサムネ撤去に伴い削除
 - `ios/Photorans/Features/Camera/CameraSession.swift` — 変更なし (キャプチャ経路は完成済み) の見込み
 - `ios/Photorans/Features/History/HistoryDetailView.swift` — 画像のアスペクト比固定を解除
 - `ios/Photorans/Features/Camera/ImageCompressor.swift` — 検証次第で orientation 正規化を追加

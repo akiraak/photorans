@@ -16,7 +16,9 @@ struct CameraPreviewView: UIViewRepresentable {
     func makeUIView(context: Context) -> PreviewUIView {
         let view = PreviewUIView()
         view.previewLayer.session = session
-        view.previewLayer.videoGravity = .resizeAspectFill
+        // WYSIWYG: プレビュー枠 = 撮影画像の見える範囲を一致させる。`.resizeAspectFill`
+        // は画像が枠よりはみ出して保存範囲とズレるため使わない。
+        view.previewLayer.videoGravity = .resizeAspect
 
         let recognizer = UITapGestureRecognizer(
             target: context.coordinator,

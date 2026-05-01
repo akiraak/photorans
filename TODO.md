@@ -3,9 +3,26 @@
 - [ ] 利用トークンと料金を管理画面に表示
 - [ ] 横向きの写真を撮りたい / 撮影範囲の WYSIWYG 化 ([plan](docs/plans/landscape-capture.md))
   - [ ] Phase1 撮影範囲 WYSIWYG 化 (`videoGravity = .resizeAspect` + portrait レイアウト再設計)
+    - [x] Step1-1 `CameraPreviewView.makeUIView` で `videoGravity` を `.resizeAspect` に変更
+    - [x] Step1-2 `CameraView` を GeometryReader でレイアウト構成に変更し、画面上部に preview を貼って下部余白に bottomControls を配置 (portrait 想定)
+    - [ ] Step1-3 実機で「枠に映っている範囲 = 撮影される範囲」を確認、`/admin` で撮影画像の構図がプレビューと一致
   - [ ] Phase2 プレビュー回転対応 (`CameraPreviewView` の connection 角度追従)
+    - [ ] Step2-1 `CameraViewModel` に `lastValidRotationAngle: CGFloat` を `@Observable` の var として導入。orientation observer のクロージャから `portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込む (それ以外の向きは無視 = 直前値維持)。`capturePhoto` 内の `currentRotationAngle()` 呼び出しも同プロパティ参照に切替
+    - [ ] Step2-2 `CameraPreviewView.updateUIView` で受け取った角度を `previewLayer.connection?.videoRotationAngle` に反映 (`isVideoRotationAngleSupported` チェック)
+    - [ ] Step2-3 実機で landscape にしたときプレビューが正しく回ることを確認
   - [ ] Phase3 撮影 UI の回転追従 + landscape レイアウト (シャッター位置とアイコン向き)
+    - [ ] Step3-1 `CameraView` の GeometryReader 内で preview の余白領域 (portrait なら下、landscape なら右) を計算して bottomControls の配置を切替
+    - [ ] Step3-2 `shutterButton` / `translatingOverlay` に `.rotationEffect(.degrees(rotation))` + `.animation` を適用 (rotation は `lastValidRotationAngle` を 90 / 0 / 180 のいずれかから供給)
+    - [ ] Step3-3 実機で portrait / landscape 双方の押しやすさと見た目を確認
   - [ ] Phase4 履歴詳細の画像表示をアスペクト比追従に変更
+    - [ ] Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
+    - [ ] Step4-2 プレースホルダの aspect と整合させる (横/縦どちらの仮表示にするか決める)
+    - [ ] Step4-3 履歴一覧サムネ (`HistoryRowView.thumbnail`) は 64×64 固定で `scaledToFill` のままで OK か実機確認
   - [ ] Phase5 EXIF orientation の正常性検証 (必要に応じ修正)
+    - [ ] Step5-1 実機で landscape 撮影 → server `/admin/:id/image` で確認
+    - [ ] Step5-2 もし向きが崩れていれば `ImageCompressor` 内で orientation 正規化を追加
   - [ ] Phase6 仕上げ (リグレッション確認、TODO クローズ)
+    - [ ] Step6-1 portrait 撮影が以前と同等以上 (WYSIWYG 化分は前進)
+    - [ ] Step6-2 撮影中の回転 / 高速タップでクラッシュしない
+    - [ ] Step6-3 TODO.md → DONE.md (両 TODO 項目を統合してクローズ)、本プランを `docs/plans/archive/` に移動
 - [ ] カメラの機能強化の調査
