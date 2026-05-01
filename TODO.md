@@ -21,7 +21,7 @@
     - [ ] Step4 タグ `v0.1.0` push で初回 release ビルド → TestFlight 着信確認
       - [x] Sub1 初回 release ビルド実行 → Apple altool バリデーションで 3 つのエラーが判明 (AppIcon 不在 / `CFBundleIconName` 不在 / iOS 18 SDK でビルド)
       - [x] Sub2 AppIcon Asset Catalog 追加 (`ios/Photorans/Resources/Assets.xcassets/AppIcon.appiconset/`、`client/assets/icon.png` 1024×1024 を流用)
-      - [ ] Sub3 Bitrise stack を `osx-xcode-16.0.x` → `osx-xcode-26.4.x` に bump
+      - [x] Sub3 Bitrise stack を `osx-xcode-16.0.x` → `osx-xcode-26.4.x` に bump
       - [ ] Sub4 タグ `v0.1.0` を打ち直して再ビルド → TestFlight 着信確認
   - [ ] Phase7 実機 TestFlight 動作確認
   - [ ] Phase8 旧 RN クライアントの撤去

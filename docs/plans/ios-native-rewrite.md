@@ -390,7 +390,7 @@ App Store Connect は既存 `com.akiraak.photorans` レコードを流用 ([test
   - `Photorans` ターゲットの Resources ビルドフェーズに `Assets.xcassets in Resources` が含まれる
   - Debug/Release 両 config に `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` が反映
 
-##### Sub3 Bitrise stack 26 系に bump (Claude 作業、未着手)
+##### Sub3 Bitrise stack 26 系に bump (✅ 完了 2026-04-30)
 
 - `bitrise.yml` の `meta.bitrise.io.stack` を `osx-xcode-16.0.x` → **`osx-xcode-26.4.x`** に変更 (2026-04 時点の最新安定 Xcode 26 系)
 - `machine_type_id: g2-m1.4core` は据え置き
