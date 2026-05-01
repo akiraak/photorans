@@ -13,18 +13,20 @@ app:
   - BITRISE_SCHEME: Photorans
   - BITRISE_CONFIGURATION: Debug
 
-# 手動ビルドのみ。git push では一切発火しない。
-# 起動方法:
+# primary は手動起動のみ。release は tag v* push で自動起動。
+# 手動起動方法:
 #   - Bitrise Web UI の "Start build" ボタン
 #   - API: curl https://api.bitrise.io/v0.1/apps/<APP_SLUG>/builds ...
-trigger_map: []
+trigger_map:
+- tag: v*
+  workflow: release
 
 workflows:
   primary:
     description: |-
       リポジトリにコミット済みの ios/Photorans.xcodeproj を使い、
       iOS シミュレータ向けに未署名ビルドする (generic destination)。
-      アーカイブ・署名は行わない (Phase6 で release を追加)。
+      アーカイブ・署名は行わない (release Workflow が担当)。
       .xcodeproj は WSL2 上の XcodeGen Linux ビルドで再生成する想定で、
       CI 側では生成ステップを持たない。
     steps:
@@ -36,4 +38,25 @@ workflows:
         - configuration: $BITRISE_CONFIGURATION
         # destination は default の generic/platform=iOS Simulator で十分
         # (特定シミュレータの起動不要、ビルド検証のみ)
+    - deploy-to-bitrise-io@2: {}
+
+  release:
+    description: |-
+      tag v* push でトリガ。Workspace に登録した Apple service connection
+      (API Key 認証) を自動利用し、Release configuration で archive →
+      App Store Connect / TestFlight にアップロードする。
+      ビルド番号は $BITRISE_BUILD_NUMBER を xcconfig override で
+      CURRENT_PROJECT_VERSION に注入する。
+    steps:
+    - git-clone@8: {}
+    - xcode-archive@6:
+        inputs:
+        - project_path: $BITRISE_PROJECT_PATH
+        - scheme: $BITRISE_SCHEME
+        - configuration: Release
+        - distribution_method: app-store
+        - automatic_code_signing: api-key
+        - xcconfig_content: |
+            CURRENT_PROJECT_VERSION = $BITRISE_BUILD_NUMBER
+    - deploy-to-itunesconnect-application-loader@1: {}
     - deploy-to-bitrise-io@2: {}

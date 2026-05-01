@@ -15,6 +15,10 @@
     - [x] Step1 履歴一覧 + 詳細画面 + スワイプ削除
     - [x] Step2 撮影直後の履歴タブ自動遷移 + 結果 sheet 撤去
   - [ ] Phase6 Bitrise コード署名 + TestFlight 提出 Workflow
+    - [ ] Step1 App Store Connect API Key 発行 + Bitrise への接続 (Akira さん作業)
+    - [ ] Step2 コード署名方式の決定 (Automatic Code Signing 第一候補)
+    - [ ] Step3 `release` Workflow を `bitrise.yml` に追加 + `Info.plist` に `ITSAppUsesNonExemptEncryption: false` 追加
+    - [ ] Step4 タグ `v0.1.0` push で初回 release ビルド → TestFlight 着信確認
   - [ ] Phase7 実機 TestFlight 動作確認
   - [ ] Phase8 旧 RN クライアントの撤去
 - [ ] TestFlight での実行 [plan](docs/plans/testflight.md)
