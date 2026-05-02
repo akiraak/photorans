@@ -153,6 +153,10 @@ app.post('/translate', async (c) => {
       originalText: parsed.originalText,
       translatedText: parsed.translatedText,
       model: MODEL_ID,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      cacheCreationInputTokens: response.usage.cache_creation_input_tokens ?? null,
+      cacheReadInputTokens: response.usage.cache_read_input_tokens ?? null,
     });
     console.log(`[translate] history saved: id=${saved.id}`);
   } catch (err) {

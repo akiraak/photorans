@@ -21,14 +21,33 @@ db.exec(`
     imageMimeType TEXT NOT NULL,
     originalText TEXT NOT NULL,
     translatedText TEXT NOT NULL,
-    model TEXT NOT NULL
+    model TEXT NOT NULL,
+    inputTokens INTEGER,
+    outputTokens INTEGER,
+    cacheCreationInputTokens INTEGER,
+    cacheReadInputTokens INTEGER
   );
   CREATE INDEX IF NOT EXISTS idx_history_createdAt ON history(createdAt DESC);
 `);
 
+const existingColumns = new Set(
+  (db.pragma('table_info(history)') as Array<{ name: string }>).map((c) => c.name),
+);
+for (const col of ['inputTokens', 'outputTokens', 'cacheCreationInputTokens', 'cacheReadInputTokens']) {
+  if (!existingColumns.has(col)) {
+    db.exec(`ALTER TABLE history ADD COLUMN ${col} INTEGER`);
+  }
+}
+
 const insertStmt = db.prepare(`
-  INSERT INTO history (id, createdAt, imagePath, imageMimeType, originalText, translatedText, model)
-  VALUES (@id, @createdAt, @imagePath, @imageMimeType, @originalText, @translatedText, @model)
+  INSERT INTO history (
+    id, createdAt, imagePath, imageMimeType, originalText, translatedText, model,
+    inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens
+  )
+  VALUES (
+    @id, @createdAt, @imagePath, @imageMimeType, @originalText, @translatedText, @model,
+    @inputTokens, @outputTokens, @cacheCreationInputTokens, @cacheReadInputTokens
+  )
 `);
 
 const countStmt = db.prepare(`SELECT COUNT(*) AS c FROM history`);
@@ -70,6 +89,10 @@ export interface SaveHistoryInput {
   originalText: string;
   translatedText: string;
   model: string;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  cacheCreationInputTokens?: number | null;
+  cacheReadInputTokens?: number | null;
 }
 
 export interface SaveHistoryResult {
@@ -94,6 +117,10 @@ export function saveHistory(input: SaveHistoryInput): SaveHistoryResult {
     originalText: input.originalText,
     translatedText: input.translatedText,
     model: input.model,
+    inputTokens: input.inputTokens ?? null,
+    outputTokens: input.outputTokens ?? null,
+    cacheCreationInputTokens: input.cacheCreationInputTokens ?? null,
+    cacheReadInputTokens: input.cacheReadInputTokens ?? null,
   });
 
   pruneOldHistory();
@@ -109,16 +136,22 @@ export interface HistoryRecord {
   originalText: string;
   translatedText: string;
   model: string;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  cacheCreationInputTokens: number | null;
+  cacheReadInputTokens: number | null;
 }
 
 const listStmt = db.prepare(`
-  SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model
+  SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model,
+         inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens
   FROM history
   ORDER BY createdAt DESC
 `);
 
 const getStmt = db.prepare(`
-  SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model
+  SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model,
+         inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens
   FROM history
   WHERE id = ?
 `);

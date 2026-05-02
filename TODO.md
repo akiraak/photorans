@@ -1,7 +1,7 @@
 # TODO
 
 - [ ] 利用トークンと料金を管理画面に表示 ([plan](docs/plans/admin-usage-cost.md))
-  - [ ] Phase1 履歴スキーマ拡張 + usage 保存
+  - [x] Phase1 履歴スキーマ拡張 + usage 保存
   - [ ] Phase2 料金計算ユーティリティ (`server/src/pricing.ts`)
   - [ ] Phase3 詳細画面にトークン・料金表示
   - [ ] Phase4 一覧画面に集計サマリ + 料金列
