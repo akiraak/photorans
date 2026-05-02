@@ -166,8 +166,8 @@ ScrollView 内なので高さが伸びても問題ない。プレースホルダ
   - Step3-4 実機で portrait UI 固定で持ち替えても回転待ちが起きないこと、横持ち撮影画像がサーバ `/admin` で横長保存されていることを確認
 - **Phase4 履歴詳細の画像表示をアスペクト比追従に変更** — `HistoryDetailView.photo` の固定 aspect を撤去
   - Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
-  - Step4-2 プレースホルダの aspect と整合させる (横/縦どちらの仮表示にするか決める)
-  - Step4-3 履歴一覧サムネ (`HistoryRowView.thumbnail`) は 64×64 固定で `scaledToFill` のままで OK か実機確認
+  - Step4-2 プレースホルダは 3:4 (portrait) を維持 — 画像がない時の仮表示はデフォルト用途 (縦) に合わせる
+  - ~~Step4-3~~ 履歴一覧サムネ (`HistoryRowView.thumbnail`) の実機確認は本プラン対象外として別 TODO に分離
 - **Phase5 EXIF orientation の正常性検証 (必要に応じ修正)** — landscape 撮影 JPEG が `/admin` / 端末両方で正しい向きで表示されること
   - Step5-1 実機で landscape 撮影 → server `/admin/:id/image` で確認
   - Step5-2 もし向きが崩れていれば `ImageCompressor` 内で orientation 正規化を追加

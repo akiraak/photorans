@@ -10,15 +10,15 @@
     - [x] Step2-1 `CameraViewModel` に `lastValidRotationAngle: CGFloat` を `@Observable` の var として導入。orientation observer のクロージャから `portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込む (それ以外の向きは無視 = 直前値維持)。`capturePhoto` 内の `currentRotationAngle()` 呼び出しも同プロパティ参照に切替
     - [x] Step2-2 `CameraPreviewView.updateUIView` で受け取った角度を `previewLayer.connection?.videoRotationAngle` に反映 (`isVideoRotationAngleSupported` チェック)
     - [x] Step2-3 実機で `rot` / `dev` が landscape で更新されることを確認 (debug overlay)。映像の回転確認は landscape で shutter が押せないため Phase3-3 と統合
-  - [ ] Phase3 撮影 UI の回転追従 (B3' 純正カメラ portrait lock 準拠。UI / preview は portrait 固定、撮影画像だけ世界向き保存。B2 試行版は v0.1.9 で破棄、UI 回転待ちが 8 秒かかる問題)
+  - [x] Phase3 撮影 UI の回転追従 (B3' 純正カメラ portrait lock 準拠。UI / preview は portrait 固定、撮影画像だけ世界向き保存。B2 試行版は v0.1.9 で破棄、UI 回転待ちが 8 秒かかる問題)
     - [x] Step3-1 `Info.plist` の `UISupportedInterfaceOrientations` を portrait のみに戻す
     - [x] Step3-2 `CameraView` の GeometryReader 内を portrait 1 本のレイアウトに戻す (B2 切替を撤回)
     - [x] Step3-3 `CameraPreviewView` の `rotationAngle` 引数を撤去し、preview connection の `videoRotationAngle` を 90° (portrait sensor 向き) で常時固定
     - [x] Step3-4 実機で portrait UI 固定で持ち替えても回転待ちが起きないこと、横持ち撮影画像がサーバ `/admin` で横長保存されていることを確認
-  - [ ] Phase4 履歴詳細の画像表示をアスペクト比追従に変更
+  - [x] Phase4 履歴詳細の画像表示をアスペクト比追従に変更
     - [x] Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
     - [x] Step4-2 プレースホルダは 3:4 (portrait) を維持 — 画像がない時の仮表示はデフォルト用途 (縦) に合わせる
-    - [ ] Step4-3 履歴一覧サムネ (`HistoryRowView.thumbnail`) は 64×64 固定で `scaledToFill` のままで OK か実機確認
+    - [x] ~~Step4-3~~ 履歴一覧サムネ (`HistoryRowView.thumbnail`) の実機確認は別 TODO に分離
   - [ ] Phase5 EXIF orientation の正常性検証 (必要に応じ修正)
     - [ ] Step5-1 実機で landscape 撮影 → server `/admin/:id/image` で確認
     - [ ] Step5-2 もし向きが崩れていれば `ImageCompressor` 内で orientation 正規化を追加
@@ -26,5 +26,6 @@
     - [ ] Step6-1 portrait 撮影が以前と同等以上 (WYSIWYG 化分は前進)
     - [ ] Step6-2 撮影中の回転 / 高速タップでクラッシュしない
     - [ ] Step6-3 TODO.md → DONE.md (両 TODO 項目を統合してクローズ)、本プランを `docs/plans/archive/` に移動
+- [ ] 履歴一覧サムネ (`HistoryRowView.thumbnail`) のサイズ・scaling 実機確認 (64×64 固定 + `scaledToFill` で横長/縦長どちらも違和感ないか)
 - [ ] カメラの機能強化の調査
   - [ ] ズーム
