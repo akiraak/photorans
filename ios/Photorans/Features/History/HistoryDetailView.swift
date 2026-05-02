@@ -25,8 +25,7 @@ struct HistoryDetailView: View {
         if let image = UIImage(contentsOfFile: url.path) {
             Image(uiImage: image)
                 .resizable()
-                .scaledToFill()
-                .aspectRatio(3.0 / 4.0, contentMode: .fit)
+                .scaledToFit()
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         } else {

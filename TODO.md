@@ -14,10 +14,10 @@
     - [x] Step3-1 `Info.plist` の `UISupportedInterfaceOrientations` を portrait のみに戻す
     - [x] Step3-2 `CameraView` の GeometryReader 内を portrait 1 本のレイアウトに戻す (B2 切替を撤回)
     - [x] Step3-3 `CameraPreviewView` の `rotationAngle` 引数を撤去し、preview connection の `videoRotationAngle` を 90° (portrait sensor 向き) で常時固定
-    - [ ] Step3-4 実機で portrait UI 固定で持ち替えても回転待ちが起きないこと、横持ち撮影画像がサーバ `/admin` で横長保存されていることを確認
+    - [x] Step3-4 実機で portrait UI 固定で持ち替えても回転待ちが起きないこと、横持ち撮影画像がサーバ `/admin` で横長保存されていることを確認
   - [ ] Phase4 履歴詳細の画像表示をアスペクト比追従に変更
-    - [ ] Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
-    - [ ] Step4-2 プレースホルダの aspect と整合させる (横/縦どちらの仮表示にするか決める)
+    - [x] Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
+    - [x] Step4-2 プレースホルダは 3:4 (portrait) を維持 — 画像がない時の仮表示はデフォルト用途 (縦) に合わせる
     - [ ] Step4-3 履歴一覧サムネ (`HistoryRowView.thumbnail`) は 64×64 固定で `scaledToFill` のままで OK か実機確認
   - [ ] Phase5 EXIF orientation の正常性検証 (必要に応じ修正)
     - [ ] Step5-1 実機で landscape 撮影 → server `/admin/:id/image` で確認
