@@ -199,6 +199,8 @@ const ADMIN_STYLE = `
   table { border-collapse: collapse; width: 100%; }
   th, td { border-bottom: 1px solid #e1e4e8; padding: 8px 12px; text-align: left; vertical-align: top; font-size: 14px; }
   th { background: #f6f8fa; font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th.num { text-align: right; }
   .preview { color: #586069; max-width: 480px; }
   .empty { color: #586069; padding: 24px 0; }
   .detail { display: grid; grid-template-columns: minmax(280px, 1fr) 2fr; gap: 24px; align-items: start; }
@@ -207,32 +209,89 @@ const ADMIN_STYLE = `
   pre { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 4px; padding: 12px; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
   h2 { font-size: 15px; margin: 16px 0 8px; }
   .back { margin-bottom: 16px; display: inline-block; }
+  .summary { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 4px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #1a1a1a; }
+  .summary .row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .summary .row + .row { margin-top: 6px; }
+  .summary .label { color: #586069; min-width: 8em; }
   @media (max-width: 720px) { .detail { grid-template-columns: 1fr; } }
 `;
 
+interface UsageSummary {
+  count: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+}
+
+function summarize(records: HistoryRecord[]): UsageSummary {
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let costUsd = 0;
+  for (const r of records) {
+    inputTokens += r.inputTokens ?? 0;
+    outputTokens += r.outputTokens ?? 0;
+    const cost = calculateCost(r.model, {
+      inputTokens: r.inputTokens,
+      outputTokens: r.outputTokens,
+      cacheCreationInputTokens: r.cacheCreationInputTokens,
+      cacheReadInputTokens: r.cacheReadInputTokens,
+    });
+    if (cost !== null) costUsd += cost;
+  }
+  return { count: records.length, inputTokens, outputTokens, costUsd };
+}
+
+function renderSummaryRow(label: string, s: UsageSummary): string {
+  return `
+    <div class="row">
+      <span class="label">${escapeHtml(label)}</span>
+      <span>件数: ${s.count.toLocaleString('en-US')}</span>
+      <span>input: ${s.inputTokens.toLocaleString('en-US')}</span>
+      <span>output: ${s.outputTokens.toLocaleString('en-US')}</span>
+      <span>料金: $${s.costUsd.toFixed(4)}</span>
+    </div>`;
+}
+
 function renderListPage(records: HistoryRecord[]): string {
+  const monthPrefix = new Date().toISOString().slice(0, 7);
+  const monthRecords = records.filter((r) => r.createdAt.startsWith(monthPrefix));
+  const allSummary = summarize(records);
+  const monthSummary = summarize(monthRecords);
+
   const rows = records
     .map((r) => {
       const created = escapeHtml(r.createdAt);
       const original = escapeHtml(truncate(r.originalText.replace(/\s+/g, ' '), 80));
       const translated = escapeHtml(truncate(r.translatedText.replace(/\s+/g, ' '), 80));
+      const cost = calculateCost(r.model, {
+        inputTokens: r.inputTokens,
+        outputTokens: r.outputTokens,
+        cacheCreationInputTokens: r.cacheCreationInputTokens,
+        cacheReadInputTokens: r.cacheReadInputTokens,
+      });
       return `
         <tr>
           <td><a href="/admin/${encodeURIComponent(r.id)}">${created}</a></td>
           <td class="preview">${original || '<span class="empty">(空)</span>'}</td>
           <td class="preview">${translated || '<span class="empty">(空)</span>'}</td>
           <td>${escapeHtml(r.model)}</td>
+          <td class="num">${escapeHtml(formatUsd(cost))}</td>
         </tr>`;
     })
     .join('');
+  const summary = `
+    <div class="summary">
+      ${renderSummaryRow('全期間', allSummary)}
+      ${renderSummaryRow(`当月 (${monthPrefix})`, monthSummary)}
+    </div>`;
   const body = records.length
-    ? `<table>
+    ? `${summary}<table>
         <thead>
-          <tr><th>作成日時</th><th>原文 (抜粋)</th><th>訳文 (抜粋)</th><th>モデル</th></tr>
+          <tr><th>作成日時</th><th>原文 (抜粋)</th><th>訳文 (抜粋)</th><th>モデル</th><th class="num">料金</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>`
-    : '<p class="empty">履歴はまだありません。</p>';
+    : `${summary}<p class="empty">履歴はまだありません。</p>`;
   return `<!doctype html>
 <html lang="ja">
 <head>
