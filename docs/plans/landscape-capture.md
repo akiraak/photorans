@@ -168,9 +168,9 @@ ScrollView 内なので高さが伸びても問題ない。プレースホルダ
   - Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
   - Step4-2 プレースホルダは 3:4 (portrait) を維持 — 画像がない時の仮表示はデフォルト用途 (縦) に合わせる
   - ~~Step4-3~~ 履歴一覧サムネ (`HistoryRowView.thumbnail`) の実機確認は本プラン対象外として別 TODO に分離
-- **Phase5 EXIF orientation の正常性検証 (必要に応じ修正)** — landscape 撮影 JPEG が `/admin` / 端末両方で正しい向きで表示されること
-  - Step5-1 実機で landscape 撮影 → server `/admin/:id/image` で確認
-  - Step5-2 もし向きが崩れていれば `ImageCompressor` 内で orientation 正規化を追加
+- **Phase5 EXIF orientation の正常性検証 (2026-05-02 完了 / 向き崩れなし)** — landscape 撮影 JPEG が `/admin` / 端末両方で正しい向きで表示されることを実機確認。`AVCapturePhotoOutput` が `connection.videoRotationAngle` を尊重してピクセル単位で世界向きに焼き込んだ JPEG を出すため、`ImageCompressor` 経路は通常リサイズ実行 (`UIGraphicsImageRenderer` + `draw(in:)` で `.up` に正規化) で問題なし
+  - Step5-1 実機で landscape / portrait を撮影 → server `/admin/:id/image` および履歴詳細で正常表示を確認 (2026-05-02 OK)
+  - ~~Step5-2~~ orientation 崩れなし、`ImageCompressor` への正規化追加は不要
 - **Phase6 仕上げ** — リグレッション確認、TODO クローズ
   - Step6-1 portrait 撮影が以前と同等以上 (WYSIWYG 化分は前進)
   - Step6-2 撮影中の回転 / 高速タップでクラッシュしない

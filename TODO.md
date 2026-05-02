@@ -1,6 +1,5 @@
 # TODO
 
-- [ ] 利用トークンと料金を管理画面に表示
 - [ ] 横向きの写真を撮りたい / 撮影範囲の WYSIWYG 化 ([plan](docs/plans/landscape-capture.md))
   - [x] Phase1 撮影範囲 WYSIWYG 化 (`videoGravity = .resizeAspect` + portrait レイアウト再設計)
     - [x] Step1-1 `CameraPreviewView.makeUIView` で `videoGravity` を `.resizeAspect` に変更
@@ -19,13 +18,16 @@
     - [x] Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
     - [x] Step4-2 プレースホルダは 3:4 (portrait) を維持 — 画像がない時の仮表示はデフォルト用途 (縦) に合わせる
     - [x] ~~Step4-3~~ 履歴一覧サムネ (`HistoryRowView.thumbnail`) の実機確認は別 TODO に分離
-  - [ ] Phase5 EXIF orientation の正常性検証 (必要に応じ修正)
-    - [ ] Step5-1 実機で landscape 撮影 → server `/admin/:id/image` で確認
-    - [ ] Step5-2 もし向きが崩れていれば `ImageCompressor` 内で orientation 正規化を追加
+  - [x] Phase5 EXIF orientation の正常性検証 (向き崩れなし、追加修正不要)
+    - [x] Step5-1 実機で landscape / portrait 撮影 → server `/admin/:id/image` および履歴詳細で正常表示を確認
+    - [x] ~~Step5-2~~ orientation 崩れなし、`ImageCompressor` への正規化追加は不要
   - [ ] Phase6 仕上げ (リグレッション確認、TODO クローズ)
     - [ ] Step6-1 portrait 撮影が以前と同等以上 (WYSIWYG 化分は前進)
     - [ ] Step6-2 撮影中の回転 / 高速タップでクラッシュしない
     - [ ] Step6-3 TODO.md → DONE.md (両 TODO 項目を統合してクローズ)、本プランを `docs/plans/archive/` に移動
-- [ ] 履歴一覧サムネ (`HistoryRowView.thumbnail`) のサイズ・scaling 実機確認 (64×64 固定 + `scaledToFill` で横長/縦長どちらも違和感ないか)
+- [ ] 利用トークンと料金を管理画面に表示
+    必要に応じて画像の解像度の調整でトークン量を下げる。文字お越しの性能との兼ね合い
+- [ ] 履歴画面の設計
+    メインコンテンツを翻訳済みにして、カメラはメインコンテンツ画面下にカメラ起動ボタンを付けて起動させるものでよい
 - [ ] カメラの機能強化の調査
   - [ ] ズーム
