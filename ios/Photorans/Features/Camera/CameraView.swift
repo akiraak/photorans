@@ -9,9 +9,6 @@ struct CameraView: View {
     @State private var viewModel = CameraViewModel()
     @State private var errorAlertMessage: String?
     @State private var focusReticle: FocusReticleState?
-    /// Phase2 Step2-3 切り分け用: NotificationCenter から直接観測した端末向き。
-    /// Phase3 着手時に削除する。
-    @State private var debugDeviceOrientation: UIDeviceOrientation = .unknown
 
     var body: some View {
         ZStack {
@@ -44,17 +41,12 @@ struct CameraView: View {
             if viewModel.isTranslating {
                 translatingOverlay
             }
-
-            debugOverlay
         }
         .task {
             await viewModel.onAppear()
         }
         .onDisappear {
             viewModel.onDisappear()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            debugDeviceOrientation = UIDevice.current.orientation
         }
         .onChange(of: viewModel.lastError) { _, newValue in
             if let newValue {
@@ -77,12 +69,7 @@ struct CameraView: View {
 
     private var previewSection: some View {
         ZStack {
-            CameraPreviewView(
-                session: viewModel.camera.session,
-                onApplyState: { state in
-                    viewModel.debugConnectionState = state
-                }
-            ) { layerPoint, devicePoint in
+            CameraPreviewView(session: viewModel.camera.session) { layerPoint, devicePoint in
                 viewModel.focus(at: devicePoint)
                 showFocusReticle(at: layerPoint)
             }
@@ -101,41 +88,6 @@ struct CameraView: View {
             if viewModel.permissionStatus == .authorized {
                 shutterButton
             }
-        }
-    }
-
-    /// Phase2 Step2-3 切り分け用 overlay。
-    /// rot: ViewModel が capture/preview に渡す角度。
-    /// dev: NotificationCenter から直接観測した端末向き (ViewModel 経由ではない)。
-    /// upd: ViewModel の orientation observer が呼ばれた回数。
-    /// Phase3 着手時に削除する。
-    private var debugOverlay: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("rot: \(Int(viewModel.lastValidRotationAngle))°")
-            Text("dev: \(orientationName(debugDeviceOrientation))")
-            Text("upd: \(viewModel.debugUpdateCount)")
-            Text(viewModel.debugConnectionState)
-        }
-        .font(.system(size: 11, design: .monospaced))
-        .padding(8)
-        .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 6))
-        .foregroundStyle(.green)
-        .padding(.top, 60)
-        .padding(.leading, 16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .allowsHitTesting(false)
-    }
-
-    private func orientationName(_ orientation: UIDeviceOrientation) -> String {
-        switch orientation {
-        case .unknown: return "unknown"
-        case .portrait: return "portrait"
-        case .portraitUpsideDown: return "upsideDown"
-        case .landscapeLeft: return "landLeft"
-        case .landscapeRight: return "landRight"
-        case .faceUp: return "faceUp"
-        case .faceDown: return "faceDown"
-        @unknown default: return "?"
         }
     }
 

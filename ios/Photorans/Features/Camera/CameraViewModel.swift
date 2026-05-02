@@ -14,16 +14,9 @@ final class CameraViewModel {
     var lastError: String?
     var lastResult: TranslateResponse?
     /// 直近に観測した有効な端末向きを `AVCaptureConnection.videoRotationAngle` 用の角度で保持。
-    /// プレビュー回転 / 撮影回転 / UI アイコン回転で共通参照する。
     /// portrait=90 / landscapeLeft=0 / landscapeRight=180 のいずれか。
     /// portraitUpsideDown / faceUp / faceDown / unknown が来たときは更新しない (直前値維持)。
     var lastValidRotationAngle: CGFloat = 90
-    /// Phase2 Step2-3 デバッグ用: orientation observer が何度呼ばれたかを記録。
-    /// Phase3 着手時に削除する。
-    var debugUpdateCount: Int = 0
-    /// Phase3 検証用: CameraPreviewView の applyRotationAngle 内で観測した preview connection の状態。
-    /// 「conn:<実値>° sup:Y/N」または「noConn」。Phase3-3 検証完了で削除。
-    var debugConnectionState: String = "?"
 
     private var orientationObserver: NSObjectProtocol?
 
@@ -141,7 +134,6 @@ final class CameraViewModel {
     /// `lastValidRotationAngle` を更新する。背面カメラ前提のマッピング。
     /// `portraitUpsideDown` / `faceUp` / `faceDown` / `unknown` は無視 (直前値維持)。
     private func updateRotationAngleFromDeviceOrientation() {
-        debugUpdateCount += 1
         switch UIDevice.current.orientation {
         case .portrait:
             lastValidRotationAngle = 90

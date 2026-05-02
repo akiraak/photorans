@@ -13,8 +13,6 @@ struct CameraPreviewView: UIViewRepresentable {
     private static let previewRotationAngle: CGFloat = 90
 
     let session: AVCaptureSession
-    /// Phase3 検証用: rotation 適用試行時の状態を呼び出し側に通知 (Phase3-4 完了で削除)。
-    var onApplyState: (@MainActor (String) -> Void)?
     var onTap: (@MainActor (_ layerPoint: CGPoint, _ devicePoint: CGPoint) -> Void)?
 
     func makeCoordinator() -> Coordinator {
@@ -49,16 +47,10 @@ struct CameraPreviewView: UIViewRepresentable {
     /// `previewLayer.connection` を常に portrait sensor 向き (90°) に固定する。
     private func applyRotationAngle(to layer: AVCaptureVideoPreviewLayer) {
         let angle = Self.previewRotationAngle
-        guard let connection = layer.connection else {
-            onApplyState?("noConn")
-            return
-        }
-        let supported = connection.isVideoRotationAngleSupported(angle)
-        if supported {
+        guard let connection = layer.connection else { return }
+        if connection.isVideoRotationAngleSupported(angle) {
             connection.videoRotationAngle = angle
         }
-        let actual = Int(connection.videoRotationAngle)
-        onApplyState?("conn:\(actual)° sup:\(supported ? "Y" : "N") req:\(Int(angle))°")
     }
 
     /// UITapGestureRecognizer のアクションは常に main thread で呼ばれるため、
