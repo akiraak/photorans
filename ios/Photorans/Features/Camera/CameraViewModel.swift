@@ -18,7 +18,43 @@ final class CameraViewModel {
     /// portraitUpsideDown / faceUp / faceDown / unknown が来たときは更新しない (直前値維持)。
     var lastValidRotationAngle: CGFloat = 90
 
+    /// AVFoundation の `videoZoomFactor` をそのまま保持する真実値。HUD 表示・clamp の基準。
+    var zoomFactor: CGFloat = 1.0
+    /// `onConfigured` snapshot で受け取った device の最大 zoom factor のミラー。
+    var maxZoomFactor: CGFloat = 1.0
+    /// Triple / DualWide なら true。HUD 表記変換用 (ViewModel 側ミラー、device は直接読まない)。
+    var isVirtualDevice: Bool = false
+    /// ピンチ中の HUD 強調表示用フラグ (Phase3 の HUD 不透明度切替に使う)。
+    var isPinching: Bool = false
+
+    /// HUD に表示する純正カメラ風の倍率文字列。仮想デバイスは `zoomFactor / 2` で換算
+    /// (videoZoomFactor=2.0 = 純正 1.0x = Wide FOV、=1.0 = 純正 0.5x = UltraWide)。
+    var displayZoomLabel: String {
+        let displayed = isVirtualDevice ? zoomFactor / 2 : zoomFactor
+        return String(format: "%.1fx", displayed)
+    }
+
+    /// ピンチ開始時の zoomFactor。`UIPinchGestureRecognizer.scale` は連続値なので
+    /// 開始時の倍率 × scale で目標値を組む (`.began` で更新)。
+    private var pinchStartFactor: CGFloat = 1.0
+
     private var orientationObserver: NSObjectProtocol?
+
+    init() {
+        // CameraSession からの configure 完了通知を受け取り、ミラーを初期化する。
+        // closure は sessionQueue 上で呼ばれるので Task で MainActor へ hop する。
+        camera.onConfigured = { [weak self] snapshot in
+            Task { @MainActor in
+                self?.applySnapshot(snapshot)
+            }
+        }
+    }
+
+    private func applySnapshot(_ snapshot: ZoomSnapshot) {
+        isVirtualDevice = snapshot.isVirtualDevice
+        maxZoomFactor = snapshot.maxFactor
+        zoomFactor = snapshot.initialFactor
+    }
 
     func onAppear() async {
         startTrackingOrientation()
@@ -36,6 +72,14 @@ final class CameraViewModel {
         @unknown default:
             break
         }
+
+        // sessionQueue 上で initialZoomFactor を再適用する。permission denied 経路では
+        // CameraSession 側 guard で no-op になる (configureIfNeeded 未到達)。
+        // MainActor 側ミラーは初回 onAppear では onConfigured snapshot で正解値が来るまで
+        // 既知の isVirtualDevice ベースで暫定リセット (再 onAppear 時に意味を持つ)。
+        camera.resetZoomToInitial()
+        zoomFactor = isVirtualDevice ? 2.0 : 1.0
+        isPinching = false
     }
 
     func onDisappear() {
@@ -100,6 +144,27 @@ final class CameraViewModel {
     func focus(at devicePoint: CGPoint) {
         guard permissionStatus == .authorized else { return }
         camera.focus(at: devicePoint)
+    }
+
+    /// `UIPinchGestureRecognizer` から呼ばれる zoom 更新。AVFoundation の videoZoomFactor を
+    /// `pinchStartFactor * scale` で組み、1.0 〜 maxZoomFactor の範囲に clamp する。
+    /// 仮想デバイス (Triple / DualWide) の場合 1.0 は UltraWide FOV (純正 0.5x) に該当する。
+    /// `state` の型は UIKit の `UIGestureRecognizer.State` (SwiftUI の GestureState ではない)。
+    func updateZoom(scale: CGFloat, state: UIGestureRecognizer.State) {
+        switch state {
+        case .began:
+            pinchStartFactor = zoomFactor
+            isPinching = true
+        case .changed:
+            let target = pinchStartFactor * scale
+            let clamped = min(max(target, 1.0), maxZoomFactor)
+            zoomFactor = clamped
+            camera.setZoomFactor(clamped)
+        case .ended, .cancelled, .failed:
+            isPinching = false
+        default:
+            break
+        }
     }
 
     // MARK: - Orientation

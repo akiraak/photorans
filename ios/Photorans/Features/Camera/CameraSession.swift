@@ -1,6 +1,16 @@
 import AVFoundation
 import os
 
+/// CameraSession の configureIfNeeded 完了時に MainActor (ViewModel) へ渡す zoom 関連スナップショット。
+/// ViewModel はこの値で内部ミラー (`zoomFactor` / `maxZoomFactor` / `isVirtualDevice`) を初期化し、
+/// 以降は `device` を直接読まずに HUD 表示・clamp を行う。
+struct ZoomSnapshot: Sendable {
+    let isVirtualDevice: Bool
+    let initialFactor: CGFloat
+    let minFactor: CGFloat
+    let maxFactor: CGFloat
+}
+
 enum CameraError: Error, LocalizedError {
     case notConfigured
     case noVideoConnection
@@ -39,6 +49,11 @@ final class CameraSession: @unchecked Sendable {
     /// 仮想デバイスは 2.0 (= 純正 1.0x = Wide FOV)、Wide 単独は 1.0。sessionQueue 専有。
     private var initialZoomFactor: CGFloat = 1.0
     private var pendingDelegates: [UUID: PhotoCaptureDelegate] = [:]
+
+    /// configureIfNeeded 完了時に sessionQueue 上で 1 度だけ呼ぶ。MainActor 側 ViewModel が
+    /// `device` を直接読まずに済ませるためのハンドオフ経路。closure 自体は MainActor に
+    /// hop しない (受け取り側が `Task { @MainActor in ... }` で hop する責務)。
+    var onConfigured: (@Sendable (ZoomSnapshot) -> Void)?
 
     func start() {
         sessionQueue.async { [self] in
@@ -165,6 +180,47 @@ final class CameraSession: @unchecked Sendable {
 
         self.device = device
         isConfigured = true
+
+        let snapshot = ZoomSnapshot(
+            isVirtualDevice: isVirtualDevice,
+            initialFactor: initialZoomFactor,
+            minFactor: device.minAvailableVideoZoomFactor,
+            maxFactor: device.maxAvailableVideoZoomFactor
+        )
+        onConfigured?(snapshot)
+    }
+
+    /// ピンチジェスチャ等から呼ばれる zoom 適用。AVFoundation の `videoZoomFactor` を直接動かす。
+    /// permission denied / 未設定時は no-op (ViewModel 側の clamp 結果と device 側の clamp が
+    /// 一致しないケースに備えて sessionQueue 上で再 clamp する)。
+    func setZoomFactor(_ factor: CGFloat) {
+        sessionQueue.async { [self] in
+            guard isConfigured, let device else { return }
+            do {
+                try device.lockForConfiguration()
+                defer { device.unlockForConfiguration() }
+                let clamped = min(max(factor, device.minAvailableVideoZoomFactor), device.maxAvailableVideoZoomFactor)
+                device.videoZoomFactor = clamped
+            } catch {
+                logger.error("setZoomFactor lockForConfiguration 失敗: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    /// CameraView の onAppear から呼ばれる zoom リセット。`initialZoomFactor` (Phase1 で決定済み) を
+    /// 再適用する。configureIfNeeded 直後は configureFocus 内ですでに同じ値が入っているので冪等。
+    func resetZoomToInitial() {
+        sessionQueue.async { [self] in
+            guard isConfigured, let device else { return }
+            do {
+                try device.lockForConfiguration()
+                defer { device.unlockForConfiguration() }
+                let clamped = min(max(initialZoomFactor, device.minAvailableVideoZoomFactor), device.maxAvailableVideoZoomFactor)
+                device.videoZoomFactor = clamped
+            } catch {
+                logger.error("resetZoomToInitial lockForConfiguration 失敗: \(error.localizedDescription, privacy: .public)")
+            }
+        }
     }
 
     /// 近接被写体 (テキスト撮影想定) に強い AF と初期 videoZoomFactor を設定する。
