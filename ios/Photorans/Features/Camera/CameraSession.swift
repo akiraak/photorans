@@ -32,6 +32,12 @@ final class CameraSession: @unchecked Sendable {
     private let logger = Logger(subsystem: "com.akiraak.photorans", category: "CameraSession")
     private var isConfigured = false
     private var device: AVCaptureDevice?
+    /// 仮想デバイス (Triple / DualWide) なら true。zoom HUD 表記変換と initialZoomFactor 決定に使う。
+    /// sessionQueue 専有 — MainActor から直接読まない (Phase2 で snapshot ハンドオフ予定)。
+    private var isVirtualDevice = false
+    /// configureIfNeeded 完了時 / resetZoomToInitial 時に適用する videoZoomFactor 初期値。
+    /// 仮想デバイスは 2.0 (= 純正 1.0x = Wide FOV)、Wide 単独は 1.0。sessionQueue 専有。
+    private var initialZoomFactor: CGFloat = 1.0
     private var pendingDelegates: [UUID: PhotoCaptureDelegate] = [:]
 
     func start() {
@@ -122,10 +128,20 @@ final class CameraSession: @unchecked Sendable {
 
         session.sessionPreset = .photo
 
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            logger.error("背面ワイドカメラデバイスが見つかりません")
+        // 仮想デバイス (Triple / DualWide) を優先入力に入れて switchover をシステムに任せる方針。
+        // DiscoverySession は deviceTypes の指定順を維持して devices を返すので、
+        // Triple → DualWide → Wide 単独 の優先順位がそのまま first 取得の順序になる。
+        let discovery = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInTripleCamera, .builtInDualWideCamera, .builtInWideAngleCamera],
+            mediaType: .video,
+            position: .back
+        )
+        guard let device = discovery.devices.first else {
+            logger.error("背面カメラデバイスが見つかりません")
             return
         }
+        isVirtualDevice = (device.deviceType == .builtInTripleCamera || device.deviceType == .builtInDualWideCamera)
+        initialZoomFactor = isVirtualDevice ? 2.0 : 1.0
 
         do {
             let input = try AVCaptureDeviceInput(device: device)
@@ -151,8 +167,10 @@ final class CameraSession: @unchecked Sendable {
         isConfigured = true
     }
 
-    /// 近接被写体 (テキスト撮影想定) に強い AF を初期設定する。
+    /// 近接被写体 (テキスト撮影想定) に強い AF と初期 videoZoomFactor を設定する。
     /// `.near` は OCR 用途で重要なので、サポートされない端末でも他の設定だけは適用する。
+    /// 初期 zoom は configureIfNeeded で決めた `initialZoomFactor` を同じ lock 内で適用して
+    /// AF/AE 反映と同時にシステムへ commit する。
     private func configureFocus(on device: AVCaptureDevice) {
         do {
             try device.lockForConfiguration()
@@ -167,6 +185,9 @@ final class CameraSession: @unchecked Sendable {
             if device.isExposureModeSupported(.continuousAutoExposure) {
                 device.exposureMode = .continuousAutoExposure
             }
+
+            let clamped = min(max(initialZoomFactor, device.minAvailableVideoZoomFactor), device.maxAvailableVideoZoomFactor)
+            device.videoZoomFactor = clamped
         } catch {
             logger.error("初期 focus 設定失敗: \(error.localizedDescription, privacy: .public)")
         }
