@@ -385,6 +385,42 @@ photorans の 2 つのフロー (digital zoom / optical zoom) を分けて考察
 4. **Phase3 内の実機計測は実施しない** ⇒ TestFlight 1 ラウンド温存。Phase4 実装プラン草案 → 実装 → リリース後 1 度の実機検証で OCR 精度差・switchover 挙動・起動時間体感をまとめて確認するルートが効率的
 5. **Phase4 で起こす実装プラン草案には、E 節「必要な変更点」6 項目をそのまま step として落とす**
 
+## Phase4 推奨方針 (2026-05-02)
+
+ステータス: **完了**。実装プラン草案を `docs/plans/camera-zoom.md` に切り出し、TODO に「カメラズーム実装」を追加した。
+
+### 結論: **実装する (限定実装: ピンチのみ + 仮想デバイス自動切替)**
+
+Phase1-3 の調査結果から「やる」判断を確定する。根拠:
+
+- **OCR ユースケースとの相性**: digital zoom は `ImageCompressor` の 2048px キャップと相互作用して被写体あたりの実画素数を増やす ⇒ ネット positive (Phase3 D)。Pro 系の Telephoto は別物理素子なので当然 positive
+- **既存設定との互換性**: `.near` AF / portrait lock / 2048px キャップ いずれも崩さない (Phase3 E)。仮想デバイス constituent 切替は AVFoundation 内部完結で input 差し替えなし ⇒ 過去観測の 8 秒ブラックアウトは発生しない (Phase3 F)
+- **UX**: Google Lens / Microsoft Lens / DeepL カメラ いずれも「ピンチのみ」採用。OCR / 翻訳系の主流 UX に沿う (Phase2)。プリセットボタンは端末別ロジックや「2x が光学かどうか」混乱の問題があるので MVP では出さない
+- **実装コスト**: 既存 `CameraSession.swift` への変更は 6 項目 (Phase3 E)。新規 UI は HUD `Capsule` 1 個のみ。ピンチと既存 tap-to-focus は finger count で AVFoundation/UIKit が排他判定するので競合制御も不要
+
+### 採用する仕様 (Phase1-3 の確定事項を再掲)
+
+| 項目 | 仕様 |
+|---|---|
+| デバイス選定 | `AVCaptureDevice.DiscoverySession` で Triple → DualWide → Wide 単独 の優先順位検索 |
+| ズーム操作 | ピンチジェスチャのみ (プリセットボタンなし) |
+| 倍率上限 | `device.maxAvailableVideoZoomFactor` でクランプ |
+| 倍率下限 | 仮想デバイスは `1.0` (= 純正 0.5x = UltraWide FOV) / Wide 単独は `1.0` (= 純正 1.0x) |
+| 起動時の初期倍率 | 仮想デバイスは `2.0` (= 純正 1.0x = Wide FOV) / Wide 単独は `1.0` |
+| 倍率の永続化 | しない。`onAppear` で毎回初期倍率にリセット |
+| HUD 表示 | preview 上に `Capsule + Text("1.0x")`。仮想デバイスは `factor / 2` で純正 UI 風に整形、Wide 単独は factor をそのまま表示 |
+| 撮影中ズーム変更 | `sessionQueue.async` + `device.lockForConfiguration` で直列化 (capture と競合しない) |
+
+### Phase4 の実機検証
+
+- **本 research フェーズでの実機検証はしない** (Phase3 結論)
+- 実装プラン (`docs/plans/camera-zoom.md`) 末尾の「リリース後ベリフィケーション」項目で、実装後の最初の TestFlight ラウンドで OCR 精度比較 (1x/2x/3x/5x)、switchover 時のフレーム drop 観察、起動時間体感の 3 点をまとめて確認する
+
+### 後片付け
+
+- 親 TODO「カメラの機能強化の調査」を `DONE.md` に移送し、本ファイルを `docs/plans/archive/` に移動
+- 新規 TODO「カメラズーム実装 ([plan](docs/plans/camera-zoom.md))」を追加
+
 ## 完了の定義 (DoD)
 
 - 「ズームを実装するか / しないか」が結論として明文化されている
