@@ -9,6 +9,7 @@ import {
   saveHistory,
   type HistoryRecord,
 } from './history.js';
+import { calculateCost } from './pricing.js';
 
 const app = new Hono();
 
@@ -246,7 +247,31 @@ function renderListPage(records: HistoryRecord[]): string {
 </html>`;
 }
 
+function formatTokens(n: number | null): string {
+  return n === null ? '-' : n.toLocaleString('en-US');
+}
+
+function formatUsd(n: number | null): string {
+  if (n === null) return '-';
+  return `$${n.toFixed(4)}`;
+}
+
 function renderDetailPage(r: HistoryRecord): string {
+  const tokensLine = `使用トークン: input ${formatTokens(r.inputTokens)} / output ${formatTokens(r.outputTokens)}`;
+  const cacheWrite = r.cacheCreationInputTokens ?? 0;
+  const cacheRead = r.cacheReadInputTokens ?? 0;
+  const cacheLine =
+    cacheWrite > 0 || cacheRead > 0
+      ? ` ／ cache write ${formatTokens(r.cacheCreationInputTokens)} / cache read ${formatTokens(r.cacheReadInputTokens)}`
+      : '';
+  const cost = calculateCost(r.model, {
+    inputTokens: r.inputTokens,
+    outputTokens: r.outputTokens,
+    cacheCreationInputTokens: r.cacheCreationInputTokens,
+    cacheReadInputTokens: r.cacheReadInputTokens,
+  });
+  const costLine = `料金: ${formatUsd(cost)}`;
+
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -259,6 +284,10 @@ function renderDetailPage(r: HistoryRecord): string {
   <h1>履歴詳細</h1>
   <div class="meta">
     ID: ${escapeHtml(r.id)} ／ 作成日時: ${escapeHtml(r.createdAt)} ／ モデル: ${escapeHtml(r.model)}
+  </div>
+  <div class="meta">
+    ${escapeHtml(tokensLine)}${escapeHtml(cacheLine)}<br>
+    ${escapeHtml(costLine)}
   </div>
   <div class="detail">
     <div>
