@@ -2,7 +2,7 @@
 
 - [ ] 利用トークンと料金を管理画面に表示 ([plan](docs/plans/admin-usage-cost.md))
   - [x] Phase1 履歴スキーマ拡張 + usage 保存
-  - [ ] Phase2 料金計算ユーティリティ (`server/src/pricing.ts`)
+  - [x] Phase2 料金計算ユーティリティ (`server/src/pricing.ts`)
   - [ ] Phase3 詳細画面にトークン・料金表示
   - [ ] Phase4 一覧画面に集計サマリ + 料金列
   - [ ] Phase5 疎通確認 (新旧 DB 互換 / 新規レコードで累計増分)
