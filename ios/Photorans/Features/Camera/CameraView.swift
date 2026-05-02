@@ -19,30 +19,18 @@ struct CameraView: View {
                 .ignoresSafeArea()
 
             GeometryReader { geometry in
-                // sessionPreset = .photo は 4:3 アスペクト。preview frame は短辺基準で
-                // 「短辺 × 4/3」を長辺方向に確保し、残った余白に shutter を置く。
-                // portrait: 画面幅 = 短辺 → preview を上、shutter を下。
-                // landscape: 画面高 = 短辺 → preview を左、shutter を右。
-                let isLandscape = geometry.size.width > geometry.size.height
-                let shortEdge = min(geometry.size.width, geometry.size.height)
-                let longEdgeForPreview = shortEdge * 4.0 / 3.0
+                // UI は portrait 固定 (Info.plist で landscape を除外)。preview は常に縦長
+                // frame に portrait sensor 向き (90°) で映し、撮影画像だけ capture connection の
+                // rotation で世界向きに保存する (iOS 純正カメラを portrait lock で使った時と同じ動作)。
+                let previewWidth = geometry.size.width
+                let previewHeight = previewWidth * 4.0 / 3.0
 
-                if isLandscape {
-                    HStack(spacing: 0) {
-                        previewSection
-                            .frame(width: longEdgeForPreview, height: shortEdge)
-                            .clipped()
-                        controlsSection
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                } else {
-                    VStack(spacing: 0) {
-                        previewSection
-                            .frame(width: shortEdge, height: longEdgeForPreview)
-                            .clipped()
-                        controlsSection
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
+                VStack(spacing: 0) {
+                    previewSection
+                        .frame(width: previewWidth, height: previewHeight)
+                        .clipped()
+                    controlsSection
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
 
@@ -91,7 +79,6 @@ struct CameraView: View {
         ZStack {
             CameraPreviewView(
                 session: viewModel.camera.session,
-                rotationAngle: viewModel.lastValidRotationAngle,
                 onApplyState: { state in
                     viewModel.debugConnectionState = state
                 }

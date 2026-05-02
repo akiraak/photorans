@@ -6,11 +6,14 @@ import UIKit
 /// プレビュー内のタップは `onTap` で layer 座標 (UIView 内の点) と
 /// device 座標 (`AVCaptureDevice.focusPointOfInterest` 用、0...1) の両方で通知される。
 struct CameraPreviewView: UIViewRepresentable {
+    /// preview connection の `videoRotationAngle` に常に渡す角度。
+    /// portrait sensor 向き = 90°。UI portrait 固定 (B3' 純正カメラ準拠) で preview frame は常に
+    /// 縦長矩形なので、sensor も portrait に合わせれば「縦長 frame に縦長映像」が成立する。
+    /// 撮影画像の世界向き保存は別経路 (capture connection 側) で扱う。
+    private static let previewRotationAngle: CGFloat = 90
+
     let session: AVCaptureSession
-    /// `AVCaptureConnection.videoRotationAngle` に流し込む角度。
-    /// `CameraViewModel.lastValidRotationAngle` を渡す前提。
-    let rotationAngle: CGFloat
-    /// Phase3 検証用: rotation 適用試行時の状態を呼び出し側に通知 (Phase3-3 完了で削除)。
+    /// Phase3 検証用: rotation 適用試行時の状態を呼び出し側に通知 (Phase3-4 完了で削除)。
     var onApplyState: (@MainActor (String) -> Void)?
     var onTap: (@MainActor (_ layerPoint: CGPoint, _ devicePoint: CGPoint) -> Void)?
 
@@ -43,18 +46,19 @@ struct CameraPreviewView: UIViewRepresentable {
         context.coordinator.onTap = onTap
     }
 
-    /// `previewLayer.connection` に `rotationAngle` を反映する。サポート外角度は無視。
+    /// `previewLayer.connection` を常に portrait sensor 向き (90°) に固定する。
     private func applyRotationAngle(to layer: AVCaptureVideoPreviewLayer) {
+        let angle = Self.previewRotationAngle
         guard let connection = layer.connection else {
             onApplyState?("noConn")
             return
         }
-        let supported = connection.isVideoRotationAngleSupported(rotationAngle)
+        let supported = connection.isVideoRotationAngleSupported(angle)
         if supported {
-            connection.videoRotationAngle = rotationAngle
+            connection.videoRotationAngle = angle
         }
         let actual = Int(connection.videoRotationAngle)
-        onApplyState?("conn:\(actual)° sup:\(supported ? "Y" : "N") req:\(Int(rotationAngle))°")
+        onApplyState?("conn:\(actual)° sup:\(supported ? "Y" : "N") req:\(Int(angle))°")
     }
 
     /// UITapGestureRecognizer のアクションは常に main thread で呼ばれるため、
