@@ -299,6 +299,92 @@ guard let device = session.devices.first else { return /* CameraError.noDevice *
 5. 撮影セッション間で倍率は持ち越さない (戻る → 1.0x にリセット)
 6. プリセットボタンは「ピンチでは届かない使い勝手 (例: ワンタップで Telephoto に飛びたい)」というフィードバックが実機 dogfooding で出てから検討する。Phase4 で実装する場合の dependency にはしない
 
+## Phase3 調査結果 (2026-05-02)
+
+ステータス: **完了**。実機検証は不要、Phase4 (実装プラン草案) に進める判断。
+
+### D. OCR 精度への影響 (検証方針確定)
+
+photorans の 2 つのフロー (digital zoom / optical zoom) を分けて考察する。
+
+#### Digital zoom (Wide / UltraWide 範囲内 + DualWide / Wide 単独端末の 1x 超)
+
+- AVFoundation の `videoZoomFactor` 拡大は **センサー中央 crop → 画面サイズへスケール**
+- photorans は撮影 JPEG を `ImageCompressor.compressForUpload` で長辺 ≤ 2048px に縮小して送信する
+- 「ズームせずに撮って後段で 2048px に縮小」 vs 「ズームして 2048px 全面を被写体に使う」を比べると、**後者は被写体あたりの実画素数が大きく増える**
+  - 例: 画像中央 25% を占めるだけだった看板 → 2x で画面の半分 → 文字あたりの画素は 4 倍
+  - photorans 側に後段 crop は無いので、ユーザが手動でフレーミングする現実的な手段は撮影前のズームしか無い
+- digital zoom の補間ノイズはアップサンプリングで増えるが、最終 2048px への縮小過程で大半が均される。Anthropic Vision 内部の ~1568px 縮小も加わる
+- → **digital zoom は OCR にとってネット positive**。「ズームすると OCR 精度が下がる」という事前懸念は photorans のパイプラインでは成立しない
+
+#### Optical zoom (Telephoto レンズへの切替)
+
+- Pro 系 (`.builtInTripleCamera`) の Telephoto は別物理素子。光学 3x / 5x まで実画素を確保できるので、遠めの看板で 2048px 縮小後でも文字エッジが鮮明
+- ユースケース適合度は最高。switchover threshold (Triple なら factor=6 or 10) を跨いだ瞬間に AVFoundation が物理レンズを切り替える ⇒ ピンチで滑らかに 5x まで連続的にズームする UX が成立
+- 副作用: Telephoto は最短撮影距離が長い (例: 14 Pro Telephoto ≈ 60cm)。`.near` AF restriction は仕様上「デバイスが対応していなければ無効」扱いになるが、Telephoto レンズを使っている時点で被写体は遠いはずなので、近接 AF が効かなくても OCR ユースケース上は問題にならない
+
+#### 検証方針 (確定)
+
+- **実機検証は Phase3 では実施しない**。理由:
+  - digital zoom が positive に働くロジックは明確で、photorans の 2048px キャップが既知である以上、検証で覆る可能性が低い
+  - Telephoto 切替の効果も既知 (光学 = 別センサーなので画質劣化なし)
+  - 検証コスト: TestFlight 1 ラウンド消費 + 実機で同一被写体を複数倍率で撮って `/translate` を回す手作業 ≈ 60-90 分
+- **代わりに Phase4 実装後 → 初回 TestFlight ビルドで実利用しながら確認** する。1x / 2x / 3x / 5x の OCR 比較は Phase4 実装プランの「リリース後ベリフィケーション」項目として記載する
+
+### E. 既存設定との互換性 (確認済み)
+
+`CameraSession.swift` を読んで各既存挙動とズーム実装の干渉を整理。
+
+| 既存挙動 | ズーム実装後の挙動 | 必要な対応 |
+|---|---|---|
+| `.continuousAutoFocus` + `.near` (`CameraSession.swift:156-173`) | UltraWide / Wide では `.near` 有効。Triple 経由の Telephoto に switchover 後は AVFoundation 仕様上 `.autoFocusRangeRestriction` が無効化されることがあるが、Telephoto 利用シナリオは遠距離なので OCR への影響は無し | **対応不要**。`isAutoFocusRangeRestrictionSupported` ガード (`CameraSession.swift:164`) は仮想デバイスでも `true` を返すので現行コードのまま |
+| `.continuousAutoExposure` | 仮想デバイス全 constituent で動作 | 対応不要 |
+| 仮想デバイス constituent 切替 | input は同じ仮想デバイスのまま。focus / exposure 設定は仮想デバイス全体に紐付くため自動的に引き継がれる (WWDC 2018 Session 405) | **`configureFocus` の再適用は不要**。Phase1 D で挙げた懸念はクリア |
+| Preview connection の `videoRotationAngle = 90` 固定 (`CameraPreviewView.swift:13`) | 仮想デバイスでも単一の preview connection。constituent 切替で connection は再生成されない | 対応不要 |
+| Capture connection の `videoRotationAngle` (`CameraSession.swift:68-70`) | 撮影ごとに `lastValidRotationAngle` を set。仮想デバイス・物理デバイス問わず同じ機構 | 対応不要 |
+| 撮影中 (`capturePhoto` 待ち) のズーム変更 | `videoZoomFactor` setter を **`sessionQueue` 上で実行** すれば、撮影トリガと直列化されるので競合しない。setter から戻る前に capture が走っても、撮影される画は setter 後の zoom factor を使う | **対応必須**: setter は必ず `sessionQueue.async` + `device.lockForConfiguration` のペアで実装する |
+| `ImageCompressor` 長辺 ≤ 2048px (`ImageCompressor.swift:14`) | ズームで被写体が画面いっぱいになれば 2048px 全画素が被写体に使われる | 対応不要 (ズームの効果がここに乗る) |
+| `AVCaptureDevice.default(.builtInWideAngleCamera, ...)` (`CameraSession.swift:125`) | Triple / DualWide があっても Wide 単独しか拾わない。仮想デバイスを取れない | **対応必須**: `AVCaptureDevice.DiscoverySession` 経由で Triple → DualWide → Wide 単独の優先順位検索に置き換え (Phase1 C で確定済み) |
+
+#### 必要な変更点 (Phase4 で実装プランに落とす)
+
+1. `CameraSession.configureIfNeeded()`: `AVCaptureDevice.default` を `DiscoverySession` ベースに変更
+2. `CameraSession` に zoom 関連 API 追加:
+   - `func setZoomFactor(_ factor: CGFloat)` (sessionQueue + lockForConfiguration)
+   - `var currentZoomFactor: CGFloat { get }` (MainActor 側から read。`@MainActor` 化された値で publish するか、必要時に `device.videoZoomFactor` を読む)
+   - `var maxZoomFactor: CGFloat { get }` (`device.maxAvailableVideoZoomFactor` を返す)
+   - `var isVirtualDevice: Bool { get }` (HUD 表記変換用。Triple / DualWide なら true)
+3. `CameraPreviewView` に `UIPinchGestureRecognizer` を追加し、`Coordinator` に zoom closure を 1 本追加
+4. `CameraView` に倍率 HUD (`Capsule` + `Text`) を overlay。preview frame の上端 or 下端
+5. `CameraViewModel`:
+   - `zoomFactor: CGFloat` 状態を追加
+   - `onAppear` の最後で `camera.setZoomFactor(仮想デバイスなら 2.0、Wide 単独なら 1.0)` を呼んで「純正 1.0x」に揃える
+   - ピンチハンドラ用の `func updateZoom(scale:)` を追加 (gesture の scale を受けて factor を更新)
+
+### F. session 再構成コスト (確認済み)
+
+- Phase1 D で立てた仮説「仮想デバイスを最初から入力に使えば input 差し替えなしで済む」は AVFoundation の API 仕様 (WWDC 2018 Session 405、`AVCaptureDevice.virtualDeviceSwitchOverVideoZoomFactors` のドキュメント) と整合する
+- constituent 切替は AVFoundation 内部で完結し、`session.removeInput` / `addInput` も `beginConfiguration` / `commitConfiguration` も走らない ⇒ 過去の B2 で観測された「約 8 秒ブラックアウト」は発生しない
+- ピンチ中に switchover threshold (Triple なら factor=2 / 6 or 10) を跨いだ瞬間は数フレームの drop または短時間の FOV シフトが起こりうるが、これは iOS 純正カメラでも同じ挙動で許容範囲
+- 初回 session 立ち上げで仮想デバイス取得が間に合わない端末は実質存在しない (iPhone 11 以降は Triple / DualWide が初期化済みの状態で `DiscoverySession.devices` に乗る)
+
+#### 実機計測判断
+
+- **Phase3 内では実機計測しない**
+- 計測対象 (起動時間、switchover でのフレーム drop 継続時間) は実装後にしか正確に測れない。実装前に dummy で起動時間だけ測っても意味が無い
+- Phase4 で実装プランを起こす際、「リリース後ベリフィケーション」項目に以下を含める:
+  - 起動時の preview 到達時間が現状から悪化しないか (体感 OK で十分。stopwatch は不要)
+  - 1x → 5x までピンチでスイープした時に preview に明確な黒フレーム / 8 秒級のフリーズが出ないこと
+  - 1x / 2x / 3x / 5x で同一被写体を撮って `/translate` の originalText を比較
+
+### Phase3 結論
+
+1. **OCR 精度への影響はドキュメント考察で結論可能** ⇒ digital zoom はフレーミング向上で OCR にプラス、Telephoto は別物理素子で当然プラス。実機検証は Phase4 実装後の TestFlight 段階で行う
+2. **既存設定との互換性問題は無し** ⇒ `.near` AF / portrait lock / 2048px キャップ いずれもズーム実装で崩さずに済む。Telephoto で `.near` が無効化される件は仕様通りで OCR ユースケース上問題なし
+3. **session 再構成コストは仮想デバイス起動なら回避できる** ⇒ Phase1 D の仮説は仕様上正当。実装後の switchover フレーム drop 観察は Phase4 リリース後ベリフィケーションへ
+4. **Phase3 内の実機計測は実施しない** ⇒ TestFlight 1 ラウンド温存。Phase4 実装プラン草案 → 実装 → リリース後 1 度の実機検証で OCR 精度差・switchover 挙動・起動時間体感をまとめて確認するルートが効率的
+5. **Phase4 で起こす実装プラン草案には、E 節「必要な変更点」6 項目をそのまま step として落とす**
+
 ## 完了の定義 (DoD)
 
 - 「ズームを実装するか / しないか」が結論として明文化されている
