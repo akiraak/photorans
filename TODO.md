@@ -10,10 +10,11 @@
     - [x] Step2-1 `CameraViewModel` に `lastValidRotationAngle: CGFloat` を `@Observable` の var として導入。orientation observer のクロージャから `portrait` / `landscapeLeft` / `landscapeRight` のみを 90 / 0 / 180 に変換して書き込む (それ以外の向きは無視 = 直前値維持)。`capturePhoto` 内の `currentRotationAngle()` 呼び出しも同プロパティ参照に切替
     - [x] Step2-2 `CameraPreviewView.updateUIView` で受け取った角度を `previewLayer.connection?.videoRotationAngle` に反映 (`isVideoRotationAngleSupported` チェック)
     - [x] Step2-3 実機で `rot` / `dev` が landscape で更新されることを確認 (debug overlay)。映像の回転確認は landscape で shutter が押せないため Phase3-3 と統合
-  - [ ] Phase3 撮影 UI の回転追従 (B3: UI portrait 固定 + アイコン向きだけ追従)
-    - [x] Step3-1 `Info.plist` の `UISupportedInterfaceOrientations` から landscape を除外し UI を portrait 固定 (B3 採用で「bottomControls の配置切替」は不要、shutter は常に画面下中央)
-    - [x] Step3-2 `shutterButton` / `translatingOverlay` に `.rotationEffect(.degrees(iconRotationDegrees))` + `.animation` を適用 (iconRotationDegrees = `lastValidRotationAngle - 90`、portrait=0° / landscapeLeft=-90° / landscapeRight=90°)
-    - [ ] Step3-3 実機で portrait / landscape 双方の押しやすさと見た目、landscape 撮影画像の向きをサーバ `/admin` で確認
+  - [ ] Phase3 撮影 UI の回転追従 (B2: UI ごと回転 + landscape レイアウト切替に方針変更。B3 試行版は v0.1.7-v0.1.8 で破棄)
+    - [x] Step3-1 `Info.plist` の `UISupportedInterfaceOrientations` に landscape を再追加 (UI ごと SwiftUI に回転させる)
+    - [x] Step3-2 `CameraView` の GeometryReader 内で portrait / landscape を判定し VStack / HStack を切替 (preview frame は短辺 × 4/3、shutter は portrait なら下・landscape なら右)
+    - [x] Step3-3 B3 用に入れた `iconRotationDegrees` / `.rotationEffect` を撤去 (UI ごと回るので不要)
+    - [ ] Step3-4 実機で portrait / landscape 双方の押しやすさと見た目、landscape 撮影画像の向きをサーバ `/admin` で確認
   - [ ] Phase4 履歴詳細の画像表示をアスペクト比追従に変更
     - [ ] Step4-1 `Image` を `.scaledToFit()` + `.frame(maxWidth: .infinity)` に置換
     - [ ] Step4-2 プレースホルダの aspect と整合させる (横/縦どちらの仮表示にするか決める)

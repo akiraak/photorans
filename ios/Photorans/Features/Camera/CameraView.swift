@@ -19,40 +19,30 @@ struct CameraView: View {
                 .ignoresSafeArea()
 
             GeometryReader { geometry in
-                let previewWidth = geometry.size.width
-                // sessionPreset = .photo は 4:3 アスペクト。portrait 画面では画面幅にフィットさせ、
-                // 高さ = 幅 × 4/3 でプレビューを上部に貼る。残った下部余白に bottomControls を置く。
-                let previewHeight = previewWidth * 4.0 / 3.0
+                // sessionPreset = .photo は 4:3 アスペクト。preview frame は短辺基準で
+                // 「短辺 × 4/3」を長辺方向に確保し、残った余白に shutter を置く。
+                // portrait: 画面幅 = 短辺 → preview を上、shutter を下。
+                // landscape: 画面高 = 短辺 → preview を左、shutter を右。
+                let isLandscape = geometry.size.width > geometry.size.height
+                let shortEdge = min(geometry.size.width, geometry.size.height)
+                let longEdgeForPreview = shortEdge * 4.0 / 3.0
 
-                VStack(spacing: 0) {
-                    ZStack {
-                        CameraPreviewView(
-                            session: viewModel.camera.session,
-                            rotationAngle: viewModel.lastValidRotationAngle,
-                            onApplyState: { state in
-                                viewModel.debugConnectionState = state
-                            }
-                        ) { layerPoint, devicePoint in
-                            viewModel.focus(at: devicePoint)
-                            showFocusReticle(at: layerPoint)
-                        }
-
-                        if let reticle = focusReticle {
-                            FocusReticleView()
-                                .position(reticle.point)
-                                .id(reticle.id)
-                                .transition(.opacity)
-                        }
+                if isLandscape {
+                    HStack(spacing: 0) {
+                        previewSection
+                            .frame(width: longEdgeForPreview, height: shortEdge)
+                            .clipped()
+                        controlsSection
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(width: previewWidth, height: previewHeight)
-                    .clipped()
-
-                    ZStack {
-                        if viewModel.permissionStatus == .authorized {
-                            shutterButton
-                        }
+                } else {
+                    VStack(spacing: 0) {
+                        previewSection
+                            .frame(width: shortEdge, height: longEdgeForPreview)
+                            .clipped()
+                        controlsSection
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
 
@@ -97,6 +87,36 @@ struct CameraView: View {
         }
     }
 
+    private var previewSection: some View {
+        ZStack {
+            CameraPreviewView(
+                session: viewModel.camera.session,
+                rotationAngle: viewModel.lastValidRotationAngle,
+                onApplyState: { state in
+                    viewModel.debugConnectionState = state
+                }
+            ) { layerPoint, devicePoint in
+                viewModel.focus(at: devicePoint)
+                showFocusReticle(at: layerPoint)
+            }
+
+            if let reticle = focusReticle {
+                FocusReticleView()
+                    .position(reticle.point)
+                    .id(reticle.id)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    private var controlsSection: some View {
+        ZStack {
+            if viewModel.permissionStatus == .authorized {
+                shutterButton
+            }
+        }
+    }
+
     /// Phase2 Step2-3 切り分け用 overlay。
     /// rot: ViewModel が capture/preview に渡す角度。
     /// dev: NotificationCenter から直接観測した端末向き (ViewModel 経由ではない)。
@@ -132,13 +152,6 @@ struct CameraView: View {
         }
     }
 
-    /// `lastValidRotationAngle` (capture 用 90/0/180) を SwiftUI の `.rotationEffect` で
-    /// アイコン/文字を「世界の上」に向けるための回転角に変換。
-    /// portrait=0° / landscapeLeft=-90° / landscapeRight=90°。
-    private var iconRotationDegrees: Double {
-        Double(viewModel.lastValidRotationAngle) - 90
-    }
-
     private var translatingOverlay: some View {
         VStack(spacing: 12) {
             ProgressView()
@@ -150,8 +163,6 @@ struct CameraView: View {
         }
         .padding(24)
         .background(.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 16))
-        .rotationEffect(.degrees(iconRotationDegrees))
-        .animation(.easeInOut(duration: 0.2), value: iconRotationDegrees)
     }
 
     private var errorAlertBinding: Binding<Bool> {
@@ -181,8 +192,6 @@ struct CameraView: View {
         }
         .disabled(viewModel.isCapturing || viewModel.isTranslating)
         .accessibilityLabel("撮影")
-        .rotationEffect(.degrees(iconRotationDegrees))
-        .animation(.easeInOut(duration: 0.2), value: iconRotationDegrees)
     }
 
     private var permissionDeniedOverlay: some View {
