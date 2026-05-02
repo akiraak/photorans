@@ -213,6 +213,92 @@ guard let device = session.devices.first else { return /* CameraError.noDevice *
 4. **既存 `CameraSession.swift:125` の `AVCaptureDevice.default(.builtInWideAngleCamera, ...)` は変更が必要**。実装に進む場合は DiscoverySession への置き換えが Phase4 の最初の Step
 5. **OCR 視点の懸念 (digital zoom が 2048px キャップで意味を失う / Telephoto と `.near` AF の整合)** は Phase3 の主要論点として残し、Phase2 では UX 形だけ決める
 
+## Phase2 調査結果 (2026-05-02)
+
+ステータス: **完了**。推奨 UX を 1 案 (ピンチのみ + 仮想デバイス自動切替) に確定。
+
+### リファレンスアプリの挙動 (ドキュメント観察)
+
+| アプリ | ズーム UI | 所感 |
+|---|---|---|
+| iOS 純正カメラ | ピンチ + プリセット wheel (0.5x / 1x / 2x / 3x or 5x) | 動画も含む万能 UI。プリセットは長押しで連続スライダーに変形 |
+| Google Lens (Android / iOS web) | ピンチのみ。倍率 HUD は薄いラベル | OCR / object 認識に特化。プリセットは出さない |
+| Microsoft Lens (Document モード) | ピンチのみ | プリセットなし。Document モードでは枠検出が主役 |
+| DeepL カメラ | ピンチのみ | OCR + 翻訳という photorans に最も近いユースケース |
+
+**示唆**: OCR / 翻訳系アプリではプリセットボタンを持たないのが多数派。プリセットは「動画記録中も瞬時に光学を切り替えたい」純正カメラ要件に応えるための UI で、静止画 OCR では過剰になりがち。
+
+### 各 UX 案の評価
+
+#### 案1. ピンチジェスチャのみ
+
+| 観点 | 評価 |
+|---|---|
+| ユースケース適合 | ◎ 「もう少しだけ寄りたい」を無段階で吸収 |
+| 光学切替の活用 | ○ `virtualDeviceSwitchOverVideoZoomFactors` 越えで AVFoundation が自動的に物理レンズを切り替える。ユーザは「1.0x → 5.0x」と滑らかに動かすだけで Telephoto が裏で走る |
+| 端末差吸収 | ◎ Triple / DualWide / Wide 単独すべて同じコード。仮想デバイスの `maxAvailableVideoZoomFactor` を上限にクランプするだけ |
+| 既存 tap-to-focus との競合 | △→○ `UIPinchGestureRecognizer` (2 本指) と既存 `UITapGestureRecognizer` (1 本指) は finger count / motion が排他なので衝突しない。同じ `PreviewUIView` に並べて add 可 |
+| portrait lock 下 | ◎ ピンチは方向に依存しないので影響なし |
+| 発見性 | △ ジェスチャ単独は気づきにくい。「現在倍率」を小さく overlay (`1.0x`) するだけで十分緩和できる |
+| 実装コスト | 小 (gesture 1 個 + ViewModel に zoom factor + `device.lockForConfiguration` 経由の setter) |
+
+#### 案2. プリセットボタンのみ
+
+| 観点 | 評価 |
+|---|---|
+| ユースケース適合 | △ 「あと 10% 寄りたい」が表現できない。OCR では微調整需要が高い |
+| 光学切替の活用 | ◎ ボタン = 光学切替点に直接マップできる |
+| 端末差吸収 | ✕ Triple は 0.5/1/3(or 5)、DualWide は 0.5/1、SE は 1 のみ → 端末ごとにボタン構成が変わる条件分岐が必要 |
+| ラベル表記の混乱 | ✕ 同じ「2x」でも Pro は digital zoom、無印 (48MP) もセンサー crop だが「光学」ではない。ユーザに誤認させる懸念 |
+| 発見性 | ◎ 明示ボタン |
+| 実装コスト | 中 (端末別ロジック + 動的ボタン生成 + ハイライト管理) |
+
+#### 案3. 併用 (純正カメラ式)
+
+| 観点 | 評価 |
+|---|---|
+| ユースケース適合 | ◎ |
+| 実装コスト | 大 (案1 + 案2 + 両者同期) |
+| MVP 妥当性 | ✕ photorans は撮影 → 翻訳の 1 アクション最適化が主軸。複雑な UI コンポーネントを最初から積むのは過剰 |
+
+#### 案4. 何も追加しない (現状維持)
+
+| 観点 | 評価 |
+|---|---|
+| ユースケース適合 | ✕ Pro 系の Telephoto を使えないのは「遠めの看板を撮りたい」要件に直接刺さる |
+| 期待値 | ✕ 「カメラ画面でピンチが効かない」のは現代ユーザの暗黙の期待を裏切る |
+| 後退判断の根拠 | OCR 視点では digital zoom が 2048px キャップでほぼ意味を失う点が論拠になりうるが、Pro の光学 zoom は別物なので "全否定" は正当化しにくい |
+
+### gesture 配置の確認 (`CameraPreviewView.swift`)
+
+- 現状: `PreviewUIView` (UIView) に `UITapGestureRecognizer` を 1 本貼っている (`CameraPreviewView.swift:30`)
+- 案1 採用時の追加: 同じ view に `UIPinchGestureRecognizer` を `addGestureRecognizer` するだけ。Apple 既定でタップとピンチは排他的に判定されるため `requireToFail` 等の細工は不要
+- ピンチの delta を `recognizer.scale` で取り、`startFactor * scale` を `device.videoZoomFactor` に書き戻す。`recognizer.scale = 1` リセットは pinch end 時に行う
+- gesture 内で View 状態 (倍率 HUD 表示) を更新するため `Coordinator` に zoom 用 closure を 1 本追加
+- ピンチ中は `device.ramp(...)` ではなく即値代入 (`videoZoomFactor =`) のほうが追従感が出る。プリセットボタンを将来足す場合のみ `ramp` を使う
+
+### 倍率 HUD (発見性補完)
+
+- preview の上端中央 or 下端 (controls section との境界付近) に `Capsule` 1 個 + `Text("1.0x")`
+- 通常時はうっすら表示、ピンチ中は不透明、ピンチ終了後 1.5 秒で薄く戻す
+- 表記ルール: AVFoundation `videoZoomFactor` を **純正カメラ表記に変換してから** 表示する (Phase1 で確定: 仮想デバイス上で `factor / 2` が UI 表記)。Triple 端末で `factor=2.0 → "1.0x"`、`factor=10.0 → "5.0x"`。Wide 単独端末は `factor=1.0 → "1.0x"` でそのまま
+- SE のような Wide 単独端末では `maxAvailableVideoZoomFactor` が小さい (典型的に 5〜10) ため上限に注意。実装時に明確にクランプする
+
+### 撮影セッション間の倍率の永続化
+
+- 推奨: **CameraView を抜けるたびに 1.0x にリセット**。次回起動はゼロから
+- 理由: photorans のメインフローは「撮って即翻訳結果へ遷移」なので、戻ってきたユーザは別被写体を撮る公算が高い。前回倍率を保持すると意図しない高倍率で開いて慌てる UX
+- 実装的にも `viewModel.onAppear` で `device.videoZoomFactor = 1.0` を流すだけで済む
+
+### Phase2 結論
+
+1. **採用 UX = ピンチジェスチャのみ + 倍率 HUD**。プリセットボタンは MVP では出さない
+2. 仮想デバイス (`.builtInTripleCamera` / `.builtInDualWideCamera`) を入力に使い、光学切替は `virtualDeviceSwitchOverVideoZoomFactors` 任せ。ピンチ中の switchover でブラックアウトが出るかは Phase3 (項目 F) で検証
+3. 既存 tap-to-focus との共存は `UIPinchGestureRecognizer` を `PreviewUIView` に並列で add するだけで成立。`CameraPreviewView` の Coordinator に zoom closure を 1 本足す形になる
+4. 倍率上限は `device.maxAvailableVideoZoomFactor` クランプ。HUD 表示は仮想デバイスの場合に限り「`factor / 2`」を純正 UI 風に表記する
+5. 撮影セッション間で倍率は持ち越さない (戻る → 1.0x にリセット)
+6. プリセットボタンは「ピンチでは届かない使い勝手 (例: ワンタップで Telephoto に飛びたい)」というフィードバックが実機 dogfooding で出てから検討する。Phase4 で実装する場合の dependency にはしない
+
 ## 完了の定義 (DoD)
 
 - 「ズームを実装するか / しないか」が結論として明文化されている
