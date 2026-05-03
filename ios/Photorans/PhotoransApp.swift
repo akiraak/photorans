@@ -25,6 +25,16 @@ struct PhotoransApp: App {
         WindowGroup {
             RootView()
                 .environment(\.translationCoordinator, coordinator)
+                .task { [coordinator, container] in
+                    // 起動時に `.processing` で残っている Item を再開する (Plan Step 5.3 / 5.4 / S6 a)。
+                    // `StoreBootstrap` のフォールバック直後でも、新ストアは空のためゼロ件で no-op。
+                    // `[coordinator, container]` で actor / Sendable 値だけを明示的に捕捉し、
+                    // App 構造体 (self) を @Sendable 越境させない (Swift 6 strict concurrency 配慮)。
+                    await PendingItemRecovery.runIfNeeded(
+                        container: container,
+                        retry: { id in await coordinator.retry(itemID: id) }
+                    )
+                }
         }
         .modelContainer(container)
     }
