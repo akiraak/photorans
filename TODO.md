@@ -6,7 +6,7 @@
     - [x] Phase 1: データモデル + ストア基盤 (Step 1.1〜1.7)
     - [x] Phase 2: ホーム画面骨格 (Step 2.1〜2.9)
     - [x] Phase 3: 楽観的撮影フロー (Step 3.1〜3.9)
-    - [ ] Phase 4: CRUD (Step 4.1〜4.8)
+    - [x] Phase 4: CRUD (Step 4.1〜4.8)
     - [ ] Phase 5: 検索 + リカバリ (Step 5.1〜5.6)
     - [ ] Phase 6: TestFlight + 後片付け (Step 6.1〜6.3)
 - [ ] 管理画面の改善

@@ -41,3 +41,37 @@ final class ItemGroup {
         self.items = items
     }
 }
+
+extension ItemGroup {
+    /// この Group とその配下を再帰的に削除する (Plan Step 4.6 / リスク欄「SwiftData の cascade と画像ファイル削除のずれ」)。
+    ///
+    /// 順序が重要:
+    /// 1. 配下 (自身 + 全子孫 Group) の Item の `imagePath` を traverse して `FileManager` から jpeg を消す。
+    ///    SwiftData の `.cascade` deleteRule は SwiftData 上の Item / 子 Group は連鎖削除してくれるが、
+    ///    `Item.imagePath` の jpeg は SwiftData 管理外なので **必ず** SwiftData 削除より先に列挙する。
+    /// 2. `modelContext.delete(self)` で本 Group を削除。`children` / `items` への `.cascade` 設定により
+    ///    子孫 Group と Item は SwiftData が連鎖削除する。
+    ///
+    /// `photoURLResolver` / `fileManager` はテスト用 DI ポイント。本番デフォルトは
+    /// `PhotoStorage.absoluteURL(for:)` と `.default`。`save()` は呼び出し側の責務 (削除単位を制御するため)。
+    func deleteRecursively(
+        modelContext: ModelContext,
+        photoURLResolver: (String) -> URL = PhotoStorage.absoluteURL(for:),
+        fileManager: FileManager = .default
+    ) {
+        for relativePath in collectImagePaths() {
+            let url = photoURLResolver(relativePath)
+            try? fileManager.removeItem(at: url)
+        }
+        modelContext.delete(self)
+    }
+
+    /// 配下 (自身 + 全子孫 Group) の Item の `imagePath` を集める。
+    private func collectImagePaths() -> [String] {
+        var paths: [String] = items.map(\.imagePath)
+        for child in children {
+            paths.append(contentsOf: child.collectImagePaths())
+        }
+        return paths
+    }
+}
