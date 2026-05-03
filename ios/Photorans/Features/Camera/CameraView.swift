@@ -69,10 +69,16 @@ struct CameraView: View {
 
     private var previewSection: some View {
         ZStack {
-            CameraPreviewView(session: viewModel.camera.session) { layerPoint, devicePoint in
-                viewModel.focus(at: devicePoint)
-                showFocusReticle(at: layerPoint)
-            }
+            CameraPreviewView(
+                session: viewModel.camera.session,
+                onTap: { layerPoint, devicePoint in
+                    viewModel.focus(at: devicePoint)
+                    showFocusReticle(at: layerPoint)
+                },
+                onPinch: { scale, state in
+                    viewModel.updateZoom(scale: scale, state: state)
+                }
+            )
 
             if let reticle = focusReticle {
                 FocusReticleView()
@@ -80,7 +86,26 @@ struct CameraView: View {
                     .id(reticle.id)
                     .transition(.opacity)
             }
+
+            zoomHUD
         }
+    }
+
+    /// preview 上部に常設する倍率 HUD。ピンチ中は強調 (1.0)、それ以外は控えめ (0.6)。
+    /// 仮想デバイスは `displayZoomLabel` 側で `factor / 2` 換算済み (純正カメラ風表記)。
+    private var zoomHUD: some View {
+        Capsule()
+            .fill(.black.opacity(0.5))
+            .overlay(
+                Text(viewModel.displayZoomLabel)
+                    .font(.caption)
+                    .foregroundStyle(.white)
+            )
+            .frame(width: 56, height: 28)
+            .opacity(viewModel.isPinching ? 1.0 : 0.6)
+            .animation(.easeOut(duration: 0.2), value: viewModel.isPinching)
+            .padding(.top, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var controlsSection: some View {

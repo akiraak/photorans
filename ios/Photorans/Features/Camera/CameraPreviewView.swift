@@ -14,9 +14,13 @@ struct CameraPreviewView: UIViewRepresentable {
 
     let session: AVCaptureSession
     var onTap: (@MainActor (_ layerPoint: CGPoint, _ devicePoint: CGPoint) -> Void)?
+    /// `UIPinchGestureRecognizer` のイベントを ViewModel へ流す closure。
+    /// `state` は UIKit の `UIGestureRecognizer.State` (enum)。`.began` で開始、
+    /// `.changed` で連続更新、`.ended` / `.cancelled` / `.failed` で終了。
+    var onPinch: (@MainActor (_ scale: CGFloat, _ state: UIGestureRecognizer.State) -> Void)?
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onTap: onTap)
+        Coordinator(onTap: onTap, onPinch: onPinch)
     }
 
     func makeUIView(context: Context) -> PreviewUIView {
@@ -27,11 +31,20 @@ struct CameraPreviewView: UIViewRepresentable {
         view.previewLayer.videoGravity = .resizeAspect
         applyRotationAngle(to: view.previewLayer)
 
-        let recognizer = UITapGestureRecognizer(
+        let tap = UITapGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleTap(_:))
         )
-        view.addGestureRecognizer(recognizer)
+        view.addGestureRecognizer(tap)
+
+        // tap (1 finger) と pinch (2 finger) は finger count で UIKit が排他判定するので
+        // requireToFail 等の追加設定は不要。
+        let pinch = UIPinchGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handlePinch(_:))
+        )
+        view.addGestureRecognizer(pinch)
+
         context.coordinator.previewView = view
         return view
     }
@@ -42,6 +55,7 @@ struct CameraPreviewView: UIViewRepresentable {
         }
         applyRotationAngle(to: uiView.previewLayer)
         context.coordinator.onTap = onTap
+        context.coordinator.onPinch = onPinch
     }
 
     /// `previewLayer.connection` を常に portrait sensor 向き (90°) に固定する。
@@ -59,9 +73,14 @@ struct CameraPreviewView: UIViewRepresentable {
     final class Coordinator: NSObject {
         weak var previewView: PreviewUIView?
         var onTap: (@MainActor (CGPoint, CGPoint) -> Void)?
+        var onPinch: (@MainActor (CGFloat, UIGestureRecognizer.State) -> Void)?
 
-        init(onTap: (@MainActor (CGPoint, CGPoint) -> Void)?) {
+        init(
+            onTap: (@MainActor (CGPoint, CGPoint) -> Void)?,
+            onPinch: (@MainActor (CGFloat, UIGestureRecognizer.State) -> Void)?
+        ) {
             self.onTap = onTap
+            self.onPinch = onPinch
         }
 
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
@@ -69,6 +88,18 @@ struct CameraPreviewView: UIViewRepresentable {
             let layerPoint = recognizer.location(in: view)
             let devicePoint = view.previewLayer.captureDevicePointConverted(fromLayerPoint: layerPoint)
             onTap?(layerPoint, devicePoint)
+        }
+
+        @objc func handlePinch(_ recognizer: UIPinchGestureRecognizer) {
+            onPinch?(recognizer.scale, recognizer.state)
+            // 終了系ステートで `scale` を 1 に戻すことで、次回 `.began` 〜 `.changed` の
+            // 倍率乗算 (pinchStartFactor * scale) が常に基準 1.0 から始まる。
+            switch recognizer.state {
+            case .ended, .cancelled, .failed:
+                recognizer.scale = 1
+            default:
+                break
+            }
         }
     }
 
