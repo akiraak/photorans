@@ -31,7 +31,11 @@ struct GroupDetailView: View {
             customTopBar
             HomeView(scope: .group(group), path: path)
         }
+        // 子グループへ push したときに navbar が表示される事象 (TestFlight v0.1.17 で確認) への
+        // 保険として、HomeView 側の `.toolbar(.hidden,...)` に加えて outer VStack 側でも宣言する。
+        // `.toolbarBackground(.hidden,...)` も併用し、bar 自体が隠れない場合でも背景を透過させる。
         .toolbar(.hidden, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .sheet(isPresented: $isShowingRenameSheet) {
             GroupRenameSheet(group: group)
         }

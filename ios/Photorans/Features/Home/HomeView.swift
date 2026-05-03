@@ -43,6 +43,13 @@ struct HomeView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 24)
         }
+        // ナビバー領域を 0pt にする (Plan Phase 2)。Root と Group 詳細の両方で HomeView が
+        // 描画されるため、HomeView 側で常に hidden を宣言しておくと nested destination
+        // (Group → SubGroup) でも確実に navbar が消える。RootView / GroupDetailView 側にも
+        // 残しているのは toolbar visibility が NavigationStack の hosting 階層で見つかる位置に
+        // ないと効かないケースの保険。
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
     }
 
     /// Picker 直下のパンくず行。条件を満たさないときは行ごと詰めるため `EmptyView` を返す。
@@ -73,9 +80,12 @@ struct HomeView: View {
 }
 
 /// HomeView 上部の Segmented Picker 用のセグメント識別子。
+///
+/// 並び順は `[未分類 | グループ]` (S2 既定値「未分類」を左側に置く)。`allCases` の順序が
+/// Picker の表示順序になるため、enum の宣言順序を変更しないこと。
 enum HomeSegment: String, CaseIterable, Identifiable {
-    case groups
     case unclassified
+    case groups
 
     var id: String { rawValue }
 
