@@ -204,8 +204,9 @@ final class ItemGroup {  // 命名確定 (E = ItemGroup, 2026-05-02)
     var name: String
     var createdAt: Date
     var parent: ItemGroup?  // S13-1: Q1 階層制限なし採用 (2026-05-02)。nil = ルート階層
-    @Relationship(deleteRule: .nullify, inverse: \ItemGroup.parent) var children: [ItemGroup]
-    @Relationship(deleteRule: .nullify, inverse: \Item.group) var items: [Item]
+    // S13-3 で「Group 削除 = 配下全削除」確定のため deleteRule = .cascade (2026-05-02 修正、impl plan Step 0.4)
+    @Relationship(deleteRule: .cascade, inverse: \ItemGroup.parent) var children: [ItemGroup]
+    @Relationship(deleteRule: .cascade, inverse: \Item.group) var items: [Item]
 
     init(id: UUID = UUID(), name: String, createdAt: Date = Date(), parent: ItemGroup? = nil) {
         self.id = id
@@ -226,6 +227,7 @@ final class Item {
     var group: ItemGroup?         // nil = 未分類
     var status: ItemStatus        // .processing / .completed / .failed
     var failureReason: String?    // .failed のとき UI 表示 + リトライ判断に使用
+    var retryCount: Int = 0       // 自動リトライ上限制御 (impl plan Step 3.2 / 1.3)
 
     init(...) { ... }
 }
@@ -238,10 +240,11 @@ enum ItemStatus: String, Codable {
 ```
 
 備考:
-- S3-1 の「Group 並び順 = 更新日時順」は Group モデルに専用フィールドを置かず、`items.map { $0.createdAt }.max()` で算出
-- S7 の削除時 3 択は SwiftData の deleteRule では表現できないため、UI 側で「nullify (未分類へ) / cascade (Item ごと削除)」を分岐処理
+- S3-1 の「Group 並び順 = 更新日時順」は Group モデルに専用フィールドを置かず、`items.map { $0.createdAt }.max()` で算出 (直下 Item ゼロの中間 Group は nil → 末尾固定。impl plan Step 2.5)
+- S7 / S13-3 で「Group 削除 = 配下全削除」と確定したため deleteRule は `.cascade` 一本化。3 択分岐は不要
 - `originalText` / `translatedText` を optional 化したことで、表示側は `status` で分岐 (`.processing` → シマー / `.completed` → 本文 / `.failed` → 失敗バッジ + リトライ) を行う
 - 起動時に `status == .processing` の Item を検出し、未完了として翻訳パイプラインを再投入する (kill 復帰対応)。詳細は実装プラン
+- 自動リトライは `retryCount` で 3 回上限 (impl plan Step 3.2)。写真ファイル不在は即 max にして無限ループを防ぐ
 
 ### S10. 既存 `HistoryEntry` のマイグレーション
 
