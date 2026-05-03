@@ -26,7 +26,7 @@ final class TranslationCoordinatorTests: XCTestCase {
         await coordinator.enqueue(itemID: itemID, jpegData: Data([0xFF, 0xD8, 0xFF, 0xD9]))
 
         let context = ModelContext(container)
-        let item = try XCTUnwrap(context[itemID, as: Item.self])
+        let item = try XCTUnwrap(TranslationCoordinator.fetchItem(itemID, in: context))
         XCTAssertEqual(item.status, .completed)
         XCTAssertEqual(item.originalText, "Hello")
         XCTAssertEqual(item.translatedText, "こんにちは")
@@ -59,7 +59,7 @@ final class TranslationCoordinatorTests: XCTestCase {
         await translateStarted.wait()
 
         let deleteCtx = ModelContext(container)
-        if let target = deleteCtx[itemID, as: Item.self] {
+        if let target = TranslationCoordinator.fetchItem(itemID, in: deleteCtx) {
             deleteCtx.delete(target)
             try deleteCtx.save()
         }
@@ -69,7 +69,7 @@ final class TranslationCoordinatorTests: XCTestCase {
 
         let verifyCtx = ModelContext(container)
         XCTAssertNil(
-            verifyCtx[itemID, as: Item.self],
+            TranslationCoordinator.fetchItem(itemID, in: verifyCtx),
             "削除済 Item が書き戻しで復活してはならない"
         )
     }
@@ -94,7 +94,7 @@ final class TranslationCoordinatorTests: XCTestCase {
         }
 
         let context = ModelContext(container)
-        let item = try XCTUnwrap(context[itemID, as: Item.self])
+        let item = try XCTUnwrap(TranslationCoordinator.fetchItem(itemID, in: context))
         XCTAssertEqual(item.retryCount, Item.maxRetryCount)
         XCTAssertEqual(item.status, .failed)
 
@@ -127,7 +127,7 @@ final class TranslationCoordinatorTests: XCTestCase {
         await coordinator.retry(itemID: itemID)
 
         let context = ModelContext(container)
-        let item = try XCTUnwrap(context[itemID, as: Item.self])
+        let item = try XCTUnwrap(TranslationCoordinator.fetchItem(itemID, in: context))
         XCTAssertEqual(item.status, .failed)
         XCTAssertEqual(item.retryCount, Item.maxRetryCount)
         XCTAssertEqual(item.failureReason, "画像ファイルが見つかりません")

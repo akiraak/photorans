@@ -10,7 +10,7 @@ import SwiftUI
 ///   (`ModelContext` / `@Model` は `Sendable` ではないため actor 越境禁止 — Plan PoC Step 0.2)。
 /// - `enqueue` は撮影直後の初回翻訳。MainActor 側で既に `.processing` として save 済みの Item に
 ///   対し、`PersistentIdentifier` 経由で background fetch + 翻訳実行 + 書き戻し。
-///   書き戻し前に `ctx[itemID]` で **存在確認** し、途中削除されていれば silent no-op。
+///   書き戻し前に `fetchItem` で **存在確認** し、途中削除されていれば silent no-op。
 /// - `retry` は `.failed` Item の手動 / 自動リトライ。`Item.maxRetryCount` を超えた呼び出しは
 ///   no-op、写真ファイル不在は致命扱いで `retryCount = max` を立てて以後の retry を止める。
 /// - `translate` / `loadImage` を初期化時に DI 可能にしてあり、テスト
@@ -50,7 +50,7 @@ actor TranslationCoordinator {
     ///   以後の自動リトライを永久停止する (Plan Step 3.2)。
     func retry(itemID: PersistentIdentifier) async {
         let context = ModelContext(container)
-        guard let item = context[itemID, as: Item.self] else { return }
+        guard let item = Self.fetchItem(itemID, in: context) else { return }
         guard item.retryCount < Item.maxRetryCount else { return }
 
         item.retryCount += 1
@@ -73,7 +73,7 @@ actor TranslationCoordinator {
     }
 
     /// 翻訳実行 + 結果書き戻しの共通本体。
-    /// 翻訳完了 *後* に再度 `ctx[itemID]` で存在確認することで、楽観的 UI 中に
+    /// 翻訳完了 *後* に再度 `fetchItem` で存在確認することで、楽観的 UI 中に
     /// ユーザーが詳細から Item を削除した場合のレースを silent no-op で吸収する (Plan Step 3.1)。
     private func runTranslation(itemID: PersistentIdentifier, jpegData: Data) async {
         let result: Result<TranslateResponse, Error>
@@ -85,7 +85,7 @@ actor TranslationCoordinator {
         }
 
         let context = ModelContext(container)
-        guard let item = context[itemID, as: Item.self] else { return }
+        guard let item = Self.fetchItem(itemID, in: context) else { return }
 
         switch result {
         case .success(let response):
@@ -99,6 +99,18 @@ actor TranslationCoordinator {
             item.failureReason = error.localizedDescription
         }
         try? context.save()
+    }
+
+    /// `PersistentIdentifier` で Item を引く存在確認ヘルパー。
+    ///
+    /// SwiftData iOS 17 の `ModelContext` には CoreData ライクな subscript API は無く、
+    /// `model(for:)` は cross-context の削除済み Item に対する戻り値が不定なため、
+    /// `FetchDescriptor` で全件取って `persistentModelID` 一致を線形に拾う方針を採る
+    /// (個人スケールでは N が小さく性能上の問題は無い)。削除済みなら fetch 結果から
+    /// 自然に消えているので nil を返し silent no-op になる。
+    static func fetchItem(_ id: PersistentIdentifier, in context: ModelContext) -> Item? {
+        let all = (try? context.fetch(FetchDescriptor<Item>())) ?? []
+        return all.first { $0.persistentModelID == id }
     }
 }
 
