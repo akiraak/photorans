@@ -1,26 +1,12 @@
 # TODO
 
-- [ ] アプリ画面構成の設計 [plan](docs/plans/screen-architecture.md)
-    - 写真, オリジナル英文, 日本語訳を１コンテンツとする
-    - コンテンツ一覧をメイン画面にする。
-    - コンテンツはグループ化（ディレクトリ化）できる
-    - 画面にカメラアイコンが表示されタップでカメラ画面起動。トップに保存されるかグループに保存されるかは表示している画面による
-    - 画面構成にはどのようなものが想定できるかいくつかパターンを出して考える
-    - [x] Phase 1: パターン洗い出しと比較プラン作成
-    - [x] Phase 2: Root 構成 H4 を採用 (画面構成パターン A/C は H4 詳細設計と並行決定)
-    - [x] Phase 3: H4 詳細仕様を確定 [plan](docs/plans/home-screen-h4-spec.md)
-        - [x] 第一弾 S1/S2/S9 (セグメント構成 / デフォルト / データモデル)
-        - [x] 第二弾 S4/S5/S6 (保存先解決 / カメラ配置 / 撮影後遷移)
-        - [x] 第三弾 S3/S7/S8 (各セグメント表示 / Group・Item の CRUD)
-        - [x] 第四弾 S10/S11 (マイグレーション / 空状態)
-        - [x] 第五弾 S12/S13/S14 (Q1 階層化 + Q5 検索の派生論点)
-    - [x] Phase 4: 実装プランを作成 (`docs/plans/home-screen-h4-impl.md`)
-    - [ ] Phase 5: 実装タスクを TODO に展開して着手 [impl plan](docs/plans/home-screen-h4-impl.md)
-        - [x] impl Phase 0: PoC + 設計確定 (Step 0.1〜0.4) — 事前完了 2026-05-02
-        - [ ] impl Phase 1: データモデル + ストア基盤 (Step 1.1〜1.7)
-        - [ ] impl Phase 2: ホーム画面骨格 (Step 2.1〜2.9)
-        - [ ] impl Phase 3: 楽観的撮影フロー (Step 3.1〜3.9)
-        - [ ] impl Phase 4: CRUD (Step 4.1〜4.8)
-        - [ ] impl Phase 5: 検索 + リカバリ (Step 5.1〜5.6)
-        - [ ] impl Phase 6: TestFlight + 後片付け (Step 6.1〜6.3)
+- [ ] ホーム画面 H4 実装 [plan](docs/plans/home-screen-h4-impl.md)
+    - 親プラン (完了): [screen-architecture](docs/plans/archive/screen-architecture.md) / 仕様プラン (完了): [home-screen-h4-spec](docs/plans/archive/home-screen-h4-spec.md)
+    - [x] Phase 0: PoC + 設計確定 (Step 0.1〜0.4) — 事前完了 2026-05-02
+    - [ ] Phase 1: データモデル + ストア基盤 (Step 1.1〜1.7)
+    - [ ] Phase 2: ホーム画面骨格 (Step 2.1〜2.9)
+    - [ ] Phase 3: 楽観的撮影フロー (Step 3.1〜3.9)
+    - [ ] Phase 4: CRUD (Step 4.1〜4.8)
+    - [ ] Phase 5: 検索 + リカバリ (Step 5.1〜5.6)
+    - [ ] Phase 6: TestFlight + 後片付け (Step 6.1〜6.3)
 - [ ] 管理画面の改善
