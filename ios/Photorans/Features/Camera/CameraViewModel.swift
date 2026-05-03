@@ -10,9 +10,7 @@ final class CameraViewModel {
     let camera = CameraSession()
     var permissionStatus: AVAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
     var isCapturing: Bool = false
-    var isTranslating: Bool = false
     var lastError: String?
-    var lastResult: TranslateResponse?
     /// 直近に観測した有効な端末向きを `AVCaptureConnection.videoRotationAngle` 用の角度で保持。
     /// portrait=90 / landscapeLeft=0 / landscapeRight=180 のいずれか。
     /// portraitUpsideDown / faceUp / faceDown / unknown が来たときは更新しない (直前値維持)。
@@ -87,8 +85,22 @@ final class CameraViewModel {
         stopTrackingOrientation()
     }
 
-    func capturePhoto(modelContext: ModelContext) async {
-        guard permissionStatus == .authorized, !isCapturing, !isTranslating else { return }
+    /// 楽観的撮影フロー (Plan Step 3.4):
+    /// 1. シャッター成功 + 写真ファイル保存
+    /// 2. **MainActor の modelContext で `Item(.processing, group: targetGroup)` を insert + save**
+    ///    (background coordinator が `PersistentIdentifier` で再 fetch する前にディスクへ確実に乗せる)
+    /// 3. `onCaptured` を呼んでカメラを即 dismiss
+    /// 4. `coordinator.enqueue(itemID:jpegData:)` で background 翻訳を起動
+    ///
+    /// 翻訳の進行状況は `Item.status` 経由で Home / 詳細画面が観測する。
+    /// このメソッド自身は `lastResult` / `isTranslating` を持たない (Phase 3 で廃止)。
+    func capturePhoto(
+        modelContext: ModelContext,
+        coordinator: TranslationCoordinator?,
+        targetGroup: ItemGroup?,
+        onCaptured: @MainActor () -> Void
+    ) async {
+        guard permissionStatus == .authorized, !isCapturing else { return }
         isCapturing = true
 
         let angle = lastValidRotationAngle
@@ -103,23 +115,42 @@ final class CameraViewModel {
             isCapturing = false
             return
         }
-        isCapturing = false
 
-        await translate(jpegData: compressed, savedPhoto: saved, modelContext: modelContext)
-    }
-
-    // TODO: Phase 3 で TranslationCoordinator (actor) に責務移譲し、本メソッドは消える。
-    // Phase 1 段階では HistoryEntry 永続化を撤去するだけにとどめ、translate 結果は
-    // lastResult への反映だけで終わらせる (CameraView の Preview 用 / 仮実装)。
-    private func translate(jpegData: Data, savedPhoto _: SavedPhoto, modelContext _: ModelContext) async {
-        isTranslating = true
-        defer { isTranslating = false }
+        let item: Item
         do {
-            let response = try await TranslateAPI.shared.translate(jpegData: jpegData)
-            lastResult = response
+            item = try insertProcessingItem(
+                modelContext: modelContext,
+                imagePath: saved.relativePath,
+                targetGroup: targetGroup
+            )
         } catch {
             lastError = error.localizedDescription
+            isCapturing = false
+            return
         }
+
+        let itemID = item.persistentModelID
+        isCapturing = false
+        onCaptured()
+
+        if let coordinator {
+            await coordinator.enqueue(itemID: itemID, jpegData: compressed)
+        }
+    }
+
+    /// `.processing` Item を modelContext に挿入して save するまでを MainActor で完結させる。
+    /// background coordinator が `PersistentIdentifier` で再 fetch する時点で必ずディスクに
+    /// 乗っていることを保証するため (Plan Step 3.4)。
+    /// `CaptureContextTests` がこの関数を直接呼んで `Item.group` の対応関係を検証する (Step 3.9)。
+    func insertProcessingItem(
+        modelContext: ModelContext,
+        imagePath: String,
+        targetGroup: ItemGroup?
+    ) throws -> Item {
+        let item = Item(imagePath: imagePath, status: .processing, group: targetGroup)
+        modelContext.insert(item)
+        try modelContext.save()
+        return item
     }
 
     /// プレビュー上タップで AF 点を切り替える。`devicePoint` は

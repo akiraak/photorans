@@ -3,8 +3,8 @@ import SwiftUI
 /// 右下に縦積みする 2 つの FAB。
 ///
 /// - 上段: Group 作成 FAB (`folder.badge.plus` / 二次色)。タップで `GroupCreateSheet` を提示 (S7 / S13-5)。
-/// - 下段: カメラ FAB (`camera.fill` / アクセント色)。**Phase 2 ではスタブ** (NSLog のみ)。
-///   実体の撮影起動 (fullScreenCover で `CameraView` を提示) は Phase 3 Step 3.5 で接続する。
+/// - 下段: カメラ FAB (`camera.fill` / アクセント色)。タップで `CameraView` を fullScreenCover で提示
+///   (Plan Step 3.5)。撮影成功時は `onCaptured` で即 dismiss し、翻訳は背景で進行する楽観的 UI (S6)。
 ///
 /// 押し間違い対策として 2 つのボタンを 56pt × 56pt + 16pt spacing で配置し、中心間距離 72pt を確保。
 /// 色とアクセシビリティラベルで明確に区別する。
@@ -12,6 +12,7 @@ struct HomeFAB: View {
     let scope: SegmentScope
 
     @State private var isShowingGroupCreate = false
+    @State private var isShowingCamera = false
 
     private static let buttonSize: CGFloat = 56
 
@@ -22,6 +23,12 @@ struct HomeFAB: View {
         }
         .sheet(isPresented: $isShowingGroupCreate) {
             GroupCreateSheet(scope: scope)
+        }
+        .fullScreenCover(isPresented: $isShowingCamera) {
+            CameraView(
+                targetGroup: scope.targetGroup,
+                onCaptured: { isShowingCamera = false }
+            )
         }
     }
 
@@ -41,8 +48,7 @@ struct HomeFAB: View {
 
     private var cameraButton: some View {
         Button {
-            // Phase 3 Step 3.5 で fullScreenCover で CameraView を提示する。
-            NSLog("[HomeFAB] camera tapped (Phase 2 stub) scope=\(scope.targetGroup?.name ?? "root")")
+            isShowingCamera = true
         } label: {
             Image(systemName: "camera.fill")
                 .font(.system(size: 24, weight: .semibold))

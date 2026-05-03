@@ -2,10 +2,18 @@ import AVFoundation
 import SwiftData
 import SwiftUI
 
+/// カメラプレビュー + 撮影 UI 全体。
+///
+/// 仕様 (Plan Step 3.3 / 3.5):
+/// - 親 (`HomeFAB`) から `targetGroup` を受け取り、撮影 Item の保存先 group とする (S4 / S13-4)。
+/// - シャッター成功直後に `onCaptured` を呼んで親に dismiss させる楽観的 UI (S6)。
+///   翻訳の進行・完了は `Item.status` を Home / 詳細画面が観測する責務。
 struct CameraView: View {
-    var onTranslated: () -> Void = {}
+    let targetGroup: ItemGroup?
+    var onCaptured: @MainActor () -> Void = {}
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.translationCoordinator) private var translationCoordinator
     @State private var viewModel = CameraViewModel()
     @State private var errorAlertMessage: String?
     @State private var focusReticle: FocusReticleState?
@@ -37,10 +45,6 @@ struct CameraView: View {
             default:
                 EmptyView()
             }
-
-            if viewModel.isTranslating {
-                translatingOverlay
-            }
         }
         .task {
             await viewModel.onAppear()
@@ -52,12 +56,6 @@ struct CameraView: View {
             if let newValue {
                 errorAlertMessage = newValue
                 viewModel.lastError = nil
-            }
-        }
-        .onChange(of: viewModel.lastResult) { _, newValue in
-            if newValue != nil {
-                viewModel.lastResult = nil
-                onTranslated()
             }
         }
         .alert("エラー", isPresented: errorAlertBinding) {
@@ -116,19 +114,6 @@ struct CameraView: View {
         }
     }
 
-    private var translatingOverlay: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-                .progressViewStyle(.circular)
-                .tint(.white)
-            Text("翻訳中…")
-                .font(.subheadline)
-                .foregroundStyle(.white)
-        }
-        .padding(24)
-        .background(.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 16))
-    }
-
     private var errorAlertBinding: Binding<Bool> {
         Binding(
             get: { errorAlertMessage != nil },
@@ -138,7 +123,14 @@ struct CameraView: View {
 
     private var shutterButton: some View {
         Button {
-            Task { await viewModel.capturePhoto(modelContext: modelContext) }
+            Task {
+                await viewModel.capturePhoto(
+                    modelContext: modelContext,
+                    coordinator: translationCoordinator,
+                    targetGroup: targetGroup,
+                    onCaptured: onCaptured
+                )
+            }
         } label: {
             ZStack {
                 Circle()
@@ -154,7 +146,7 @@ struct CameraView: View {
                 }
             }
         }
-        .disabled(viewModel.isCapturing || viewModel.isTranslating)
+        .disabled(viewModel.isCapturing)
         .accessibilityLabel("撮影")
     }
 
@@ -214,6 +206,6 @@ private struct FocusReticleView: View {
 }
 
 #Preview {
-    CameraView()
+    CameraView(targetGroup: nil)
         .modelContainer(for: [Item.self, ItemGroup.self], inMemory: true)
 }
