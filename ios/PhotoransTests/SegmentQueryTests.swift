@@ -145,13 +145,13 @@ final class SegmentQueryTests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    // MARK: - filterItems (空文字列 = scope 直下のみ)
+    // MARK: - filterItems (scope 直下のみ)
 
-    func testFilterItemsEmptySearchAtRootReturnsOnlyUngroupedSortedDesc() throws {
+    func testFilterItemsAtRootReturnsOnlyUngroupedSortedDesc() throws {
         let allItems = try context.fetch(FetchDescriptor<Item>())
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .root, searchText: "")
+        let result = HomeQueries.filterItems(allItems: allItems, scope: .root)
 
-        // Root では group == nil の Item のみ。`.processing` / `.failed` も含む点に注意 (S14: 空文字列はフィルタ無し)。
+        // Root では group == nil の Item のみ。`.processing` / `.failed` も含む点に注意 (S14: フィルタ無し)。
         let ids = result.map { $0.id }
         XCTAssertEqual(
             ids,
@@ -161,69 +161,23 @@ final class SegmentQueryTests: XCTestCase {
                 rootItemFailed.id,           // +3 min
                 rootItemCompletedOld.id      // +1 min
             ],
-            "Root + 空検索は group == nil の Item を createdAt 降順で返す"
+            "Root は group == nil の Item を createdAt 降順で返す"
         )
     }
 
-    func testFilterItemsEmptySearchAtGroupReturnsOnlyDirectChildrenItems() throws {
+    func testFilterItemsAtGroupReturnsOnlyDirectChildrenItems() throws {
         let allItems = try context.fetch(FetchDescriptor<Item>())
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .group(groupA), searchText: "")
+        let result = HomeQueries.filterItems(allItems: allItems, scope: .group(groupA))
 
         // Group A の直下 Item のみ。子孫 (groupA1, groupA1a) の Item は含めない。
         XCTAssertEqual(result.map { $0.id }, [groupAItemCompleted.id])
     }
 
-    func testFilterItemsWhitespaceOnlySearchTreatedAsEmpty() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .group(groupA), searchText: "   ")
-        XCTAssertEqual(result.map { $0.id }, [groupAItemCompleted.id])
-    }
+    // MARK: - filterGroups (scope 直下 + 並び順)
 
-    // MARK: - filterItems (非空文字列 = scope 無視で全 .completed 横断)
-
-    func testFilterItemsSearchCrossesAllScopesAndOnlyCompleted() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        // "hello" は rootItemCompletedRecent (originalText: "Hello world") と
-        // groupA1aItemCompleted (originalText: "Cherry hello") にマッチする。
-        // .processing / .failed Item は対象外 (S14-4)。
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .group(groupB), searchText: "hello")
-
-        let ids = Set(result.map { $0.id })
-        XCTAssertEqual(
-            ids,
-            Set([rootItemCompletedRecent.id, groupA1aItemCompleted.id]),
-            "Item 検索は scope を無視して全 .completed Item を横断する (S14)"
-        )
-        // createdAt 降順
-        XCTAssertEqual(result.map { $0.id }, [rootItemCompletedRecent.id, groupA1aItemCompleted.id])
-    }
-
-    func testFilterItemsSearchMatchesTranslatedText() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        // 翻訳テキスト「りんご」に対するマッチ。
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .root, searchText: "りんご")
-        XCTAssertEqual(result.map { $0.id }, [groupAItemCompleted.id])
-    }
-
-    func testFilterItemsSearchIsCaseInsensitive() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .root, searchText: "APPLE")
-        XCTAssertEqual(result.map { $0.id }, [groupAItemCompleted.id])
-    }
-
-    func testFilterItemsSearchExcludesProcessingAndFailed() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        // `.processing` / `.failed` の Item は originalText / translatedText が nil なので
-        // contains マッチでも当たらないが、念のため空文字列 "" に近いパターンで検索しても外れることを確認。
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .root, searchText: "z")
-        XCTAssertTrue(result.isEmpty)
-    }
-
-    // MARK: - filterGroups (空文字列 = scope 直下 + 並び順)
-
-    func testFilterGroupsEmptySearchAtRootShowsRootDirectGroupsSortedByLatestItem() throws {
+    func testFilterGroupsAtRootShowsRootDirectGroupsSortedByLatestItem() throws {
         let allGroups = try context.fetch(FetchDescriptor<ItemGroup>())
-        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .root, searchText: "")
+        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .root)
 
         // Root 直下 = parent == nil の Group (= A, B)。
         // groupA の最新 Item は groupAItemCompleted (+20 min)、groupB は groupBItemCompleted (+4 min)。
@@ -231,51 +185,56 @@ final class SegmentQueryTests: XCTestCase {
         XCTAssertEqual(result.map { $0.id }, [groupA.id, groupB.id])
     }
 
-    func testFilterGroupsEmptySearchAtGroupShowsOnlyDirectChildren() throws {
+    func testFilterGroupsAtGroupShowsOnlyDirectChildren() throws {
         let allGroups = try context.fetch(FetchDescriptor<ItemGroup>())
-        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .group(groupA), searchText: "")
+        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .group(groupA))
         // groupA の直下子は groupA1 のみ。groupA1a は孫なので含まれない。
         XCTAssertEqual(result.map { $0.id }, [groupA1.id])
     }
 
-    func testFilterGroupsEmptyEmptyItemGroupsSortedToTail() throws {
+    func testFilterGroupsEmptyItemGroupsSortedToTail() throws {
         // 直下 Item ゼロの中間 Group が末尾固定になることを別フィクスチャで確認。
         let emptyMid = ItemGroup(name: "Cグループ(空)", createdAt: Date(timeIntervalSince1970: 1_700_000_000))
         context.insert(emptyMid)
         try context.save()
 
         let allGroups = try context.fetch(FetchDescriptor<ItemGroup>())
-        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .root, searchText: "")
+        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .root)
         // A, B (Item あり) → emptyMid (Item ゼロ) の順。
         XCTAssertEqual(result.map { $0.id }, [groupA.id, groupB.id, emptyMid.id])
     }
-
-    // MARK: - filterGroups (非空文字列 = scope 配下子孫の名前 contains)
-
-    func testFilterGroupsSearchAtRootIncludesAllDescendants() throws {
-        let allGroups = try context.fetch(FetchDescriptor<ItemGroup>())
-        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .root, searchText: "A")
-        // 名前に "A" を含む = A, A1, A1a。B は除外。
-        XCTAssertEqual(
-            Set(result.map { $0.id }),
-            Set([groupA.id, groupA1.id, groupA1a.id])
-        )
-    }
-
-    func testFilterGroupsSearchAtGroupExcludesSelfAndOutsideScope() throws {
-        let allGroups = try context.fetch(FetchDescriptor<ItemGroup>())
-        // groupA scope での "A" 検索は groupA の **子孫** のみ (A 自身と Bグループは除外)。
-        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .group(groupA), searchText: "A")
-        XCTAssertEqual(
-            Set(result.map { $0.id }),
-            Set([groupA1.id, groupA1a.id]),
-            "scope 自身および scope 外の Group は除外される (S14)"
-        )
-    }
-
-    func testFilterGroupsSearchIsCaseInsensitive() throws {
-        let allGroups = try context.fetch(FetchDescriptor<ItemGroup>())
-        let result = HomeQueries.filterGroups(allGroups: allGroups, scope: .root, searchText: "bグループ")
-        XCTAssertEqual(result.map { $0.id }, [groupB.id])
-    }
 }
+
+// MARK: - Removed (search UI). Re-add per TODO「検索 UI 再導入」
+//
+// パンくず実装 (Plan: docs/plans/breadcrumb-navigation.md) で `.searchable` を一旦削除した際、
+// 以下 8 ケースを XCTest メソッドとしては削除した。再導入時の検証仕様リファレンスとして
+// 各ケースが検証していた仕様を箇条書きで残す。
+//
+// filterItems (検索文字列を受け取る branch):
+// - testFilterItemsWhitespaceOnlySearchTreatedAsEmpty
+//     → 空白のみの searchText は trim 後に空文字列扱い (= scope 直下のみを返す)。
+// - testFilterItemsSearchCrossesAllScopesAndOnlyCompleted
+//     → 非空 searchText では scope を無視し、全 `.completed` Item を横断。`.processing` / `.failed` は対象外 (S14-4)。
+//       結果は createdAt 降順。
+// - testFilterItemsSearchMatchesTranslatedText
+//     → originalText / translatedText の両方を contains 対象にする (例: "りんご" で translatedText マッチ)。
+// - testFilterItemsSearchIsCaseInsensitive
+//     → `localizedCaseInsensitiveContains` 相当 ("APPLE" で "Apple" にマッチ)。
+// - testFilterItemsSearchExcludesProcessingAndFailed
+//     → `.processing` / `.failed` Item は originalText / translatedText が nil なので contains に当たらない
+//       ことを確認 (status フィルタの間接保証)。
+//
+// filterGroups (検索文字列を受け取る branch):
+// - testFilterGroupsSearchAtRootIncludesAllDescendants
+//     → Root scope では `allGroups` 全件 (子孫すべて) が検索対象。"A" で A / A1 / A1a がヒット。
+// - testFilterGroupsSearchAtGroupExcludesSelfAndOutsideScope
+//     → Group X scope では X 自身および X の子孫以外を除外し、子孫 Group のみが検索対象。
+// - testFilterGroupsSearchIsCaseInsensitive
+//     → `localizedCaseInsensitiveContains` 相当 ("bグループ" で "Bグループ" にマッチ)。
+//
+// 再導入時の関連実装:
+// - `HomeQueries.filterItems(allItems:scope:searchText:)` / `filterGroups(allGroups:scope:searchText:)` の searchText 引数復活
+// - Group 検索の子孫展開ヘルパ `descendantGroups(allGroups:scope:)` + `collectDescendants(of:into:)` の復活
+// - `HomeView` の `@State searchText` + `.searchable(text:prompt:)` の復活、`GroupListView` / `UnclassifiedListView`
+//   の `searchText: String` 引数 + `ContentUnavailableView.search(text:)` 分岐の復活
