@@ -14,6 +14,13 @@
         - [x] 第三弾 S3/S7/S8 (各セグメント表示 / Group・Item の CRUD)
         - [x] 第四弾 S10/S11 (マイグレーション / 空状態)
         - [x] 第五弾 S12/S13/S14 (Q1 階層化 + Q5 検索の派生論点)
-    - [ ] Phase 4: 実装プランを作成 (`docs/plans/home-screen-h4-impl.md`)
-    - [ ] Phase 5: 実装タスクを TODO に展開して着手
+    - [x] Phase 4: 実装プランを作成 (`docs/plans/home-screen-h4-impl.md`)
+    - [ ] Phase 5: 実装タスクを TODO に展開して着手 [impl plan](docs/plans/home-screen-h4-impl.md)
+        - [x] impl Phase 0: PoC + 設計確定 (Step 0.1〜0.4) — 事前完了 2026-05-02
+        - [ ] impl Phase 1: データモデル + ストア基盤 (Step 1.1〜1.7)
+        - [ ] impl Phase 2: ホーム画面骨格 (Step 2.1〜2.9)
+        - [ ] impl Phase 3: 楽観的撮影フロー (Step 3.1〜3.9)
+        - [ ] impl Phase 4: CRUD (Step 4.1〜4.8)
+        - [ ] impl Phase 5: 検索 + リカバリ (Step 5.1〜5.6)
+        - [ ] impl Phase 6: TestFlight + 後片付け (Step 6.1〜6.3)
 - [ ] 管理画面の改善
