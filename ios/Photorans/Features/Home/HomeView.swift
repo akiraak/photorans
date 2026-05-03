@@ -3,21 +3,27 @@ import SwiftUI
 
 /// Root と Group 詳細で共通利用するセグメントスクリーン (S1 / S13-2)。
 ///
-/// 上部に `[グループ | 未分類]` の Segmented Picker、本文に対応するリスト、
+/// 上部に `[未分類 | グループ]` の Segmented Picker、本文に対応するリスト、
 /// 右下に 2 段スタックの `HomeFAB` (Group 作成 / カメラ) を重ねる。
 ///
 /// `navigationTitle` / `navigationDestination` は宣言しない:
-/// - タイトル付与は呼び出し側 (`RootView` / `GroupDetailView`) の責務 (Step 2.3 / 2.8)。
 /// - destination は `RootView` の NavigationStack root に集約 (Step 0.3 / 2.3)。子 View での再宣言は禁止。
 ///
-/// ナビバー削除 + パンくずリンク導入 (Plan: docs/plans/breadcrumb-navigation.md):
+/// ナビバー削除 + パンくずリンク導入 (Plan: docs/plans/breadcrumb-navigation.md / TestFlight v0.1.18 反映):
 /// - `path: Binding<NavigationPath>?` を任意で受け取る。Root インスタンスでは nil で渡され、
 ///   `GroupDetailView` インスタンスでは `RootView.@State path` の Binding が伝播される。
 /// - `scope` が `.group` かつ `selectedSegment == .groups` かつ `path != nil` のときだけ
-///   Picker 直下にパンくず (`BreadcrumbView`) を描画する。Root / 未分類タブ / path 非伝搬は描画しない。
+///   Picker 直下にパンくず行を描画する。Root / 未分類タブ / path 非伝搬は描画しない。
+/// - パンくず行は **`[←] 親 › 子 › [現在地] [⋯]`** の 1 行に統合する (TestFlight v0.1.18 フィードバック)。
+///   従前のカスタム上部行は廃止し、戻るボタンとメニュー (名前を編集 / グループ削除) はこの行に収める。
+/// - 未分類タブでは行ごと出さない。戻りたい場合は edge swipe / グループタブへ切替後の戻るボタンを使う。
 struct HomeView: View {
     let scope: SegmentScope
     var path: Binding<NavigationPath>? = nil
+    /// Group 詳細から渡される「名前を編集」ハンドラ。Root では nil。
+    var onRenameGroup: (() -> Void)? = nil
+    /// Group 詳細から渡される「グループ削除」ハンドラ。Root では nil。
+    var onDeleteGroup: (() -> Void)? = nil
 
     /// アプリ起動 / Root 復帰時のデフォルトは `未分類` (S2)。Group 詳細でも初期値は `未分類` 統一で揃える。
     @State private var selectedSegment: HomeSegment = .unclassified
@@ -33,7 +39,7 @@ struct HomeView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
 
-            breadcrumb
+            breadcrumbRow
 
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -45,26 +51,63 @@ struct HomeView: View {
         }
         // ナビバー領域を 0pt にする (Plan Phase 2)。Root と Group 詳細の両方で HomeView が
         // 描画されるため、HomeView 側で常に hidden を宣言しておくと nested destination
-        // (Group → SubGroup) でも確実に navbar が消える。RootView / GroupDetailView 側にも
-        // 残しているのは toolbar visibility が NavigationStack の hosting 階層で見つかる位置に
-        // ないと効かないケースの保険。
+        // (Group → SubGroup) でも確実に navbar が消える。
         .toolbar(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .navigationBar)
     }
 
-    /// Picker 直下のパンくず行。条件を満たさないときは行ごと詰めるため `EmptyView` を返す。
+    /// `[←] 親 › 子 › [現在地] [⋯]` の 1 行。グループタブ + .group scope + path 伝搬時のみ表示。
     @ViewBuilder
-    private var breadcrumb: some View {
+    private var breadcrumbRow: some View {
         if case .group(let g) = scope,
            selectedSegment == .groups,
            let pathBinding = path {
             let chain = BreadcrumbView.ancestorChain(of: g)
-            BreadcrumbView(chain: chain) { tappedIndex in
-                let k = BreadcrumbView.popCount(chainLength: chain.count, tappedIndex: tappedIndex)
-                if k > 0 {
-                    pathBinding.wrappedValue.removeLast(k)
+            HStack(spacing: 8) {
+                Button {
+                    if !pathBinding.wrappedValue.isEmpty {
+                        pathBinding.wrappedValue.removeLast()
+                    }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.title3)
+                        .foregroundStyle(Color.accentColor)
+                        .frame(width: 32, height: 32, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("戻る")
+
+                BreadcrumbView(chain: chain) { tappedIndex in
+                    let k = BreadcrumbView.popCount(chainLength: chain.count, tappedIndex: tappedIndex)
+                    if k > 0 {
+                        pathBinding.wrappedValue.removeLast(k)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let onRename = onRenameGroup, let onDelete = onDeleteGroup {
+                    Menu {
+                        Button {
+                            onRename()
+                        } label: {
+                            Label("名前を編集", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            onDelete()
+                        } label: {
+                            Label("グループを削除", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.title3)
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 32, height: 32, alignment: .trailing)
+                    }
+                    .accessibilityLabel("グループ メニュー")
                 }
             }
+            .padding(.horizontal)
+            .padding(.vertical, 6)
         }
     }
 

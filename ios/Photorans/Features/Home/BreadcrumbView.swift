@@ -31,9 +31,6 @@ struct BreadcrumbView: View {
                 variant(dropCount: dropCount)
             }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 6)
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// `dropCount` 個だけ Root 寄り (chain 先頭側) を `...` に畳んだバリアント。
