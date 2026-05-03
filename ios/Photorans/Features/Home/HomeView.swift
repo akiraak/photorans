@@ -17,6 +17,12 @@ import SwiftUI
 /// - パンくず行は **`[←] 親 › 子 › [現在地] [⋯]`** の 1 行に統合する (TestFlight v0.1.18 フィードバック)。
 ///   従前のカスタム上部行は廃止し、戻るボタンとメニュー (名前を編集 / グループ削除) はこの行に収める。
 /// - 未分類タブでは行ごと出さない。戻りたい場合は edge swipe / グループタブへ切替後の戻るボタンを使う。
+///
+/// 初期セグメント (Plan: docs/plans/group-default-segment.md):
+/// - Root → `.unclassified` (S2 既定値維持)
+/// - Group 詳細 → `.groups` (親→子は必ずグループタブ経由で遷移するため、遷移先で `未分類` から
+///   始めると操作の連続性が断ち切られる)
+/// `scope.defaultSegment` で解決する。
 struct HomeView: View {
     let scope: SegmentScope
     var path: Binding<NavigationPath>? = nil
@@ -25,8 +31,20 @@ struct HomeView: View {
     /// Group 詳細から渡される「グループ削除」ハンドラ。Root では nil。
     var onDeleteGroup: (() -> Void)? = nil
 
-    /// アプリ起動 / Root 復帰時のデフォルトは `未分類` (S2)。Group 詳細でも初期値は `未分類` 統一で揃える。
-    @State private var selectedSegment: HomeSegment = .unclassified
+    @State private var selectedSegment: HomeSegment
+
+    init(
+        scope: SegmentScope,
+        path: Binding<NavigationPath>? = nil,
+        onRenameGroup: (() -> Void)? = nil,
+        onDeleteGroup: (() -> Void)? = nil
+    ) {
+        self.scope = scope
+        self.path = path
+        self.onRenameGroup = onRenameGroup
+        self.onDeleteGroup = onDeleteGroup
+        self._selectedSegment = State(initialValue: scope.defaultSegment)
+    }
 
     var body: some View {
         VStack(spacing: 0) {

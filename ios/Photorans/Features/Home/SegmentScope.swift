@@ -19,4 +19,18 @@ enum SegmentScope {
             return g
         }
     }
+
+    /// HomeView インスタンスを開いたときの初期セグメント (Plan: docs/plans/group-default-segment.md)。
+    ///
+    /// - Root: `.unclassified` (S2 既定値)。アプリ起動 / Root 復帰時の挙動は変えない。
+    /// - Group 詳細: `.groups`。親グループからは必ず「グループタブ → サブグループタップ」の経路で
+    ///   push されるため、遷移先で `未分類` から始めると操作の連続性が断ち切られる。
+    var defaultSegment: HomeSegment {
+        switch self {
+        case .root:
+            return .unclassified
+        case .group:
+            return .groups
+        }
+    }
 }
