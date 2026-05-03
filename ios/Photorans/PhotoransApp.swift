@@ -7,8 +7,10 @@ struct PhotoransApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: HistoryEntry.self)
+            container = try StoreBootstrap.makeContainer()
         } catch {
+            // フラグ true 以降のコンテナ生成失敗は本物の I/O / 権限障害なので
+            // ユーザーデータを誤って破壊しないよう即時停止する (S10)。
             fatalError("Failed to initialize ModelContainer: \(error)")
         }
     }

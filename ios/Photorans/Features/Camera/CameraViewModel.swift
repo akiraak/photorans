@@ -108,34 +108,17 @@ final class CameraViewModel {
         await translate(jpegData: compressed, savedPhoto: saved, modelContext: modelContext)
     }
 
-    private func translate(jpegData: Data, savedPhoto: SavedPhoto, modelContext: ModelContext) async {
+    // TODO: Phase 3 で TranslationCoordinator (actor) に責務移譲し、本メソッドは消える。
+    // Phase 1 段階では HistoryEntry 永続化を撤去するだけにとどめ、translate 結果は
+    // lastResult への反映だけで終わらせる (CameraView の Preview 用 / 仮実装)。
+    private func translate(jpegData: Data, savedPhoto _: SavedPhoto, modelContext _: ModelContext) async {
         isTranslating = true
         defer { isTranslating = false }
         do {
             let response = try await TranslateAPI.shared.translate(jpegData: jpegData)
             lastResult = response
-            persistHistoryEntry(response: response, savedPhoto: savedPhoto, modelContext: modelContext)
         } catch {
             lastError = error.localizedDescription
-        }
-    }
-
-    private func persistHistoryEntry(
-        response: TranslateResponse,
-        savedPhoto: SavedPhoto,
-        modelContext: ModelContext
-    ) {
-        let entry = HistoryEntry(
-            imagePath: savedPhoto.relativePath,
-            originalText: response.originalText,
-            translatedText: response.translatedText,
-            model: response.model
-        )
-        modelContext.insert(entry)
-        do {
-            try modelContext.save()
-        } catch {
-            lastError = "履歴の保存に失敗しました: \(error.localizedDescription)"
         }
     }
 

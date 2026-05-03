@@ -50,6 +50,8 @@ targets:
     platform: iOS
     sources:
       - path: PhotoransTests
+        excludes:
+          - "**/*.sh"
     dependencies:
       - target: Photorans
     settings:

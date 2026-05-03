@@ -1,34 +1,15 @@
 import SwiftData
 import SwiftUI
 
+// TODO: Phase 2 で NavigationStack + HomeView(scope: .root) に差し替える。
+// 本ファイルは Phase 1 の scaffolding 段階の一時スタブ。
 struct RootView: View {
-    enum Tab: Hashable {
-        case camera
-        case history
-    }
-
-    @State private var selectedTab: Tab = .camera
-
     var body: some View {
-        TabView(selection: $selectedTab) {
-            CameraView(onTranslated: { selectedTab = .history })
-                .tabItem {
-                    Label("カメラ", systemImage: "camera")
-                }
-                .tag(Tab.camera)
-
-            NavigationStack {
-                HistoryListView()
-            }
-            .tabItem {
-                Label("履歴", systemImage: "list.bullet")
-            }
-            .tag(Tab.history)
-        }
+        EmptyView()
     }
 }
 
 #Preview {
     RootView()
-        .modelContainer(for: HistoryEntry.self, inMemory: true)
+        .modelContainer(for: [Item.self, ItemGroup.self], inMemory: true)
 }

@@ -215,5 +215,5 @@ private struct FocusReticleView: View {
 
 #Preview {
     CameraView()
-        .modelContainer(for: HistoryEntry.self, inMemory: true)
+        .modelContainer(for: [Item.self, ItemGroup.self], inMemory: true)
 }
