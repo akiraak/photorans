@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] クライアントからサーバへのアクセスをngrokのドメインに変更 synergistic-wilburn-overclean.ngrok-free.dev
+- [ ] クライアントからサーバへのアクセスをngrokのドメインに変更 synergistic-wilburn-overclean.ngrok-free.dev (`v0.1.25` push 済み、TestFlight 実機確認待ち)
 - [ ] 翻訳中アニメーションの変更
 - [ ] OCRモデルと翻訳モデルを切り替え可能に
   - [ ] 管理画面でモデル別の料金比較ができるように
