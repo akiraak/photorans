@@ -1,5 +1,10 @@
 # TODO
 
+- [ ] アプリアイコンの変更。差し替え画像:/home/ubuntu/photorans/photorans.png [plan](docs/plans/app-icon-replace.md)
+  - [x] Step 1: `photorans.png` を 1024×1024 にリサイズし `icon-1024.png` を上書き
+  - [x] Step 2: ルート直下の `photorans.png` を削除
+  - [x] Step 3: 差分確認しコミット
+  - [ ] Step 4: TestFlight 実機確認 (タグ push は Akira さん許可後)
 - [ ] 検索 UI を再導入する (パンくず実装で一旦削除した分。仕様: Item は scope 無視で全 `.completed` 横断 / Group は scope 配下子孫の名前 contains。`SegmentQueryTests` 末尾の仕様コメントブロックを参照)
 - [ ] カメラ画面に閉じるボタンを入れる [plan](docs/plans/camera-close-button.md)
   - [ ] Step 1: `CameraView` に閉じるボタン UI と `onClose` を追加
