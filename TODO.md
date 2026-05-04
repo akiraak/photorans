@@ -1,12 +1,5 @@
 # TODO
 
-- [ ] カメラを横にしたときに倍率表示の文字を横に回転する [plan](docs/plans/camera-hud-rotation.md)
-  - [ ] Phase1 HUD 文字回転実装
-    - [ ] Step1-1 `CameraView.zoomHUD` の `Text` に `.rotationEffect(zoomHUDRotation)` と `.animation(.easeInOut(duration: 0.2), value: viewModel.lastValidRotationAngle)` を追加
-    - [ ] Step1-2 `zoomHUDRotation` computed property を CameraView に追加
-    - [ ] Step1-3 コードレビュー (WSL2 ではビルド不可)
-  - [ ] Phase2 実機確認 (タグ push → Bitrise → TestFlight、Akira さん事前確認)
-  - [ ] Phase3 仕上げ (TODO → DONE 移送、plan を archive へ)
 - [ ] 翻訳中アニメーションの変更
 - [ ] グループの中に入った場合の空だった時の表示を「翻訳作成するかグループを作成するか」のテキストに変える
       グループのルート: 今までと同じ
