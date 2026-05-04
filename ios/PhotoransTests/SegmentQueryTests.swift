@@ -203,6 +203,57 @@ final class SegmentQueryTests: XCTestCase {
         // A, B (Item あり) → emptyMid (Item ゼロ) の順。
         XCTAssertEqual(result.map { $0.id }, [groupA.id, groupB.id, emptyMid.id])
     }
+
+    // MARK: - representativeItem (グループ行サムネ用)
+
+    func testRepresentativeItemReturnsNilForGroupWithNoItems() throws {
+        // サブグループしか持たない中間 Group (groupA1 は groupA1a を子孫に持つが、A1 直下に Item あり)。
+        // Item ゼロのフィクスチャを別途用意する。
+        let emptyGroup = ItemGroup(name: "空グループ", createdAt: Date(timeIntervalSince1970: 1_700_000_000))
+        context.insert(emptyGroup)
+        try context.save()
+
+        XCTAssertNil(HomeQueries.representativeItem(of: emptyGroup))
+    }
+
+    func testRepresentativeItemReturnsTheItemForSingleItemGroup() {
+        // groupB は groupBItemCompleted 1 件のみ。
+        XCTAssertEqual(
+            HomeQueries.representativeItem(of: groupB)?.id,
+            groupBItemCompleted.id
+        )
+    }
+
+    func testRepresentativeItemReturnsLatestByCreatedAt() {
+        // groupA は groupAItemCompleted (+20 min) が直下 1 件 (A1 / A1a の Item は子孫扱いで対象外)。
+        // 別 Item を直下に追加して、最新 createdAt が選ばれることを確認する。
+        let older = Item(
+            createdAt: Date(timeIntervalSince1970: 1_700_000_000),
+            imagePath: "photos/a_old.jpg",
+            status: .completed,
+            originalText: "Older",
+            translatedText: "古い",
+            model: "test",
+            group: groupA
+        )
+        context.insert(older)
+
+        XCTAssertEqual(
+            HomeQueries.representativeItem(of: groupA)?.id,
+            groupAItemCompleted.id,
+            "直下 Item の中で createdAt が最大のものを返す"
+        )
+    }
+
+    func testRepresentativeItemDoesNotRecurseIntoChildren() {
+        // groupA1 は直下に groupA1ItemCompleted (+2 min) のみ。子孫 (groupA1a) には groupA1aItemCompleted (+15 min) があるが、
+        // representativeItem は再帰しないので A1 直下のみが対象。
+        XCTAssertEqual(
+            HomeQueries.representativeItem(of: groupA1)?.id,
+            groupA1ItemCompleted.id,
+            "子孫 Group の Item には踏み込まない"
+        )
+    }
 }
 
 // MARK: - Removed (search UI). Re-add per TODO「検索 UI 再導入」

@@ -40,13 +40,14 @@ struct GroupListView: View {
         }
     }
 
+    /// グループ行の leading アイコンサイズ。Item 行のサムネと揃える
+    /// (`docs/plans/list-thumbnails.md` Step 5)。
+    private static let leadingSize = CGSize(width: 56, height: 56)
+
     @ViewBuilder
     private func rowView(for group: ItemGroup) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "folder.fill")
-                .font(.title2)
-                .foregroundStyle(.secondary)
-                .frame(width: 32)
+        HStack(alignment: .top, spacing: 12) {
+            leadingIcon(for: group)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(group.name)
@@ -57,6 +58,27 @@ struct GroupListView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    @ViewBuilder
+    private func leadingIcon(for group: ItemGroup) -> some View {
+        if let representative = HomeQueries.representativeItem(of: group) {
+            ItemThumbnailView(imagePath: representative.imagePath, size: Self.leadingSize)
+        } else {
+            folderPlaceholder
+        }
+    }
+
+    private var folderPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(Color.secondary.opacity(0.15))
+            .frame(width: Self.leadingSize.width, height: Self.leadingSize.height)
+            .overlay(
+                Image(systemName: "folder.fill")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+            )
+            .accessibilityHidden(true)
     }
 
     private func subtitle(for group: ItemGroup) -> String {

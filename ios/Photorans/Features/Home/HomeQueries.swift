@@ -50,6 +50,15 @@ enum HomeQueries {
         }
     }
 
+    /// グループ行のサムネに使う代表 Item (`docs/plans/list-thumbnails.md` Step 4)。
+    ///
+    /// 直下 Item の `createdAt` 最大の Item を返す。Item ゼロの Group (= サブグループしか持たない中間 Group) は
+    /// nil を返し、呼び出し側 (`GroupListView`) で folder アイコンにフォールバックする。子孫まで再帰しないのは、
+    /// `sortDirectGroups` の並び順 (直下 Item の最新 createdAt 降順) と一貫させるため。
+    static func representativeItem(of group: ItemGroup) -> Item? {
+        group.items.max(by: { $0.createdAt < $1.createdAt })
+    }
+
     /// 「直下 Item の最新 createdAt 降順、Item ゼロの中間 Group は末尾固定、同点は Group の createdAt 降順」
     /// の安定ソート (S3-1 / Plan Step 2.5)。
     static func sortDirectGroups(_ groups: [ItemGroup]) -> [ItemGroup] {

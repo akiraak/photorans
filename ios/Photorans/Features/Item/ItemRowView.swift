@@ -7,23 +7,37 @@ import SwiftUI
 /// - `.failed`: 失敗メッセージ + リトライボタン。`retryCount >= maxRetryCount` の Item は
 ///   `TranslationCoordinator.retry` 側で no-op になるためボタンを `disabled` にし、
 ///   「これ以上自動リトライしません」を併記する。
+///
+/// 全ステータスで行 leading に 56pt サムネを表示する (`docs/plans/list-thumbnails.md` Step 3)。
+/// `.processing` でも撮影直後に jpeg は保存済みなのでサムネは出る。
 struct ItemRowView: View {
     let item: Item
 
     @Environment(\.translationCoordinator) private var coordinator
 
+    private static let thumbnailSize = CGSize(width: 56, height: 56)
+
     var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ItemThumbnailView(imagePath: item.imagePath, size: Self.thumbnailSize)
+            content
+        }
+        .padding(.vertical, 4)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch item.status {
         case .processing:
-            processingRow
+            processingContent
         case .completed:
-            completedRow
+            completedContent
         case .failed:
-            failedRow
+            failedContent
         }
     }
 
-    private var processingRow: some View {
+    private var processingContent: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("翻訳中…")
                 .font(.body)
@@ -32,14 +46,13 @@ struct ItemRowView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(ShimmerOverlay())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("処理中")
     }
 
-    private var completedRow: some View {
+    private var completedContent: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(item.translatedText ?? "(翻訳なし)")
                 .font(.body)
@@ -48,10 +61,10 @@ struct ItemRowView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var failedRow: some View {
+    private var failedContent: some View {
         let canRetry = item.retryCount < Item.maxRetryCount
         return HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
@@ -85,6 +98,5 @@ struct ItemRowView: View {
             .controlSize(.small)
             .disabled(!canRetry)
         }
-        .padding(.vertical, 4)
     }
 }
