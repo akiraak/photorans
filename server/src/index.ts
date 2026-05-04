@@ -74,14 +74,25 @@ app.post('/translate', async (c) => {
               originalText: {
                 type: 'string',
                 description:
-                  '画像内の英語テキストを忠実に書き起こしたもの。改行・段落構造は可能な限り保持する。',
+                  '画像内の中心となる言語のテキストを忠実に書き起こしたもの。改行・段落構造は可能な限り保持する。',
               },
               translatedText: {
                 type: 'string',
-                description: 'originalText を自然な日本語に翻訳したもの。',
+                description:
+                  'originalText を targetLanguage に翻訳したもの (sourceLanguage が "en" なら自然な日本語、"ja" なら自然な英語)。',
+              },
+              sourceLanguage: {
+                type: 'string',
+                enum: ['en', 'ja'],
+                description: 'originalText の言語 (ISO 639-1)。',
+              },
+              targetLanguage: {
+                type: 'string',
+                enum: ['en', 'ja'],
+                description: 'translatedText の言語 (ISO 639-1)。sourceLanguage と必ず異なる。',
               },
             },
-            required: ['originalText', 'translatedText'],
+            required: ['originalText', 'translatedText', 'sourceLanguage', 'targetLanguage'],
             additionalProperties: false,
           },
         },
@@ -101,10 +112,11 @@ app.post('/translate', async (c) => {
             {
               type: 'text',
               text: [
-                '画像に写っている英語の文字を OCR で抽出し、自然な日本語に翻訳してください。',
-                '抽出時は改行・段落構造を保持してください。',
+                '画像内のテキストの主要言語を判定してください (英語 or 日本語)。',
+                '英語が中心なら自然な日本語に翻訳し、日本語が中心なら自然な英語に翻訳してください。',
+                'OCR は改行・段落構造を保持し、英語と日本語が混在する場合は中心となる言語を翻訳対象とし、その他言語のテキストは原文のまま originalText に含めてください。',
                 '読み取り不能な部分があれば、読み取れた範囲のみ返してください。',
-                '英語以外のテキストが混在する場合は、英語部分のみ翻訳対象とし、その他は原文のまま originalText に含めてください。',
+                'sourceLanguage には originalText の言語、targetLanguage には translatedText の言語を ISO 639-1 ("en" or "ja") で必ず返してください。',
               ].join('\n'),
             },
           ],
@@ -130,7 +142,12 @@ app.post('/translate', async (c) => {
     return c.json({ error: 'unexpected response from model' }, 502);
   }
 
-  let parsed: { originalText: unknown; translatedText: unknown };
+  let parsed: {
+    originalText: unknown;
+    translatedText: unknown;
+    sourceLanguage: unknown;
+    targetLanguage: unknown;
+  };
   try {
     parsed = JSON.parse(textBlock.text);
   } catch {
@@ -138,13 +155,21 @@ app.post('/translate', async (c) => {
     return c.json({ error: 'unexpected response from model' }, 502);
   }
 
-  if (typeof parsed.originalText !== 'string' || typeof parsed.translatedText !== 'string') {
+  if (
+    typeof parsed.originalText !== 'string' ||
+    typeof parsed.translatedText !== 'string' ||
+    !isSupportedLanguage(parsed.sourceLanguage) ||
+    !isSupportedLanguage(parsed.targetLanguage)
+  ) {
     console.error('model output missing required fields:', parsed);
     return c.json({ error: 'unexpected response from model' }, 502);
   }
 
+  const sourceLanguage = parsed.sourceLanguage;
+  const targetLanguage = parsed.targetLanguage;
+
   console.log(
-    `[translate] result: original="${previewText(parsed.originalText)}" translated="${previewText(parsed.translatedText)}"`,
+    `[translate] result: ${sourceLanguage}->${targetLanguage} original="${previewText(parsed.originalText)}" translated="${previewText(parsed.translatedText)}"`,
   );
 
   try {
@@ -153,6 +178,8 @@ app.post('/translate', async (c) => {
       imageMimeType,
       originalText: parsed.originalText,
       translatedText: parsed.translatedText,
+      sourceLanguage,
+      targetLanguage,
       model: MODEL_ID,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
@@ -167,13 +194,36 @@ app.post('/translate', async (c) => {
   return c.json({
     originalText: parsed.originalText,
     translatedText: parsed.translatedText,
+    sourceLanguage,
+    targetLanguage,
     model: MODEL_ID,
   });
 });
 
+const SUPPORTED_LANGUAGES = ['en', 'ja'] as const;
+type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+function isSupportedLanguage(value: unknown): value is SupportedLanguage {
+  return typeof value === 'string' && (SUPPORTED_LANGUAGES as readonly string[]).includes(value);
+}
+
 function previewText(s: string, max = 60): string {
   const normalized = s.replace(/\s+/g, ' ').trim();
   return normalized.length > max ? `${normalized.slice(0, max)}…` : normalized;
+}
+
+const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
+  en: '英語',
+  ja: '日本語',
+};
+
+function languageDisplayName(code: string | null | undefined, fallback: string): string {
+  if (!code) return LANGUAGE_DISPLAY_NAMES[fallback] ?? fallback;
+  return LANGUAGE_DISPLAY_NAMES[code] ?? code;
+}
+
+function languageBadge(source: string | null, target: string | null): string {
+  return `${(source ?? 'en').toUpperCase()}→${(target ?? 'ja').toUpperCase()}`;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -269,11 +319,13 @@ function renderListPage(records: HistoryRecord[]): string {
         cacheCreationInputTokens: r.cacheCreationInputTokens,
         cacheReadInputTokens: r.cacheReadInputTokens,
       });
+      const direction = escapeHtml(languageBadge(r.sourceLanguage, r.targetLanguage));
       return `
         <tr>
           <td><a href="/admin/${encodeURIComponent(r.id)}">${created}</a></td>
           <td class="preview">${original || '<span class="empty">(空)</span>'}</td>
           <td class="preview">${translated || '<span class="empty">(空)</span>'}</td>
+          <td>${direction}</td>
           <td>${escapeHtml(r.model)}</td>
           <td class="num">${escapeHtml(formatUsd(cost))}</td>
         </tr>`;
@@ -287,7 +339,7 @@ function renderListPage(records: HistoryRecord[]): string {
   const body = records.length
     ? `${summary}<table>
         <thead>
-          <tr><th>作成日時</th><th>原文 (抜粋)</th><th>訳文 (抜粋)</th><th>モデル</th><th class="num">料金</th></tr>
+          <tr><th>作成日時</th><th>原文 (抜粋)</th><th>訳文 (抜粋)</th><th>方向</th><th>モデル</th><th class="num">料金</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>`
@@ -331,6 +383,10 @@ function renderDetailPage(r: HistoryRecord): string {
   });
   const costLine = `料金: ${formatUsd(cost)}`;
 
+  const sourceLabel = languageDisplayName(r.sourceLanguage, 'en');
+  const targetLabel = languageDisplayName(r.targetLanguage, 'ja');
+  const directionLabel = languageBadge(r.sourceLanguage, r.targetLanguage);
+
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -342,7 +398,7 @@ function renderDetailPage(r: HistoryRecord): string {
   <a class="back" href="/admin">← 一覧に戻る</a>
   <h1>履歴詳細</h1>
   <div class="meta">
-    ID: ${escapeHtml(r.id)} ／ 作成日時: ${escapeHtml(r.createdAt)} ／ モデル: ${escapeHtml(r.model)}
+    ID: ${escapeHtml(r.id)} ／ 作成日時: ${escapeHtml(r.createdAt)} ／ モデル: ${escapeHtml(r.model)} ／ 方向: ${escapeHtml(directionLabel)}
   </div>
   <div class="meta">
     ${escapeHtml(tokensLine)}${escapeHtml(cacheLine)}<br>
@@ -353,9 +409,9 @@ function renderDetailPage(r: HistoryRecord): string {
       <img src="/admin/${encodeURIComponent(r.id)}/image" alt="撮影画像">
     </div>
     <div>
-      <h2>原文 (英語)</h2>
+      <h2>原文 (${escapeHtml(sourceLabel)})</h2>
       <pre>${escapeHtml(r.originalText)}</pre>
-      <h2>訳文 (日本語)</h2>
+      <h2>訳文 (${escapeHtml(targetLabel)})</h2>
       <pre>${escapeHtml(r.translatedText)}</pre>
     </div>
   </div>

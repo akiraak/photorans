@@ -25,7 +25,9 @@ db.exec(`
     inputTokens INTEGER,
     outputTokens INTEGER,
     cacheCreationInputTokens INTEGER,
-    cacheReadInputTokens INTEGER
+    cacheReadInputTokens INTEGER,
+    sourceLanguage TEXT,
+    targetLanguage TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_history_createdAt ON history(createdAt DESC);
 `);
@@ -38,15 +40,22 @@ for (const col of ['inputTokens', 'outputTokens', 'cacheCreationInputTokens', 'c
     db.exec(`ALTER TABLE history ADD COLUMN ${col} INTEGER`);
   }
 }
+for (const col of ['sourceLanguage', 'targetLanguage']) {
+  if (!existingColumns.has(col)) {
+    db.exec(`ALTER TABLE history ADD COLUMN ${col} TEXT`);
+  }
+}
 
 const insertStmt = db.prepare(`
   INSERT INTO history (
     id, createdAt, imagePath, imageMimeType, originalText, translatedText, model,
-    inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens
+    inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens,
+    sourceLanguage, targetLanguage
   )
   VALUES (
     @id, @createdAt, @imagePath, @imageMimeType, @originalText, @translatedText, @model,
-    @inputTokens, @outputTokens, @cacheCreationInputTokens, @cacheReadInputTokens
+    @inputTokens, @outputTokens, @cacheCreationInputTokens, @cacheReadInputTokens,
+    @sourceLanguage, @targetLanguage
   )
 `);
 
@@ -88,6 +97,8 @@ export interface SaveHistoryInput {
   imageMimeType: string;
   originalText: string;
   translatedText: string;
+  sourceLanguage: string;
+  targetLanguage: string;
   model: string;
   inputTokens?: number | null;
   outputTokens?: number | null;
@@ -121,6 +132,8 @@ export function saveHistory(input: SaveHistoryInput): SaveHistoryResult {
     outputTokens: input.outputTokens ?? null,
     cacheCreationInputTokens: input.cacheCreationInputTokens ?? null,
     cacheReadInputTokens: input.cacheReadInputTokens ?? null,
+    sourceLanguage: input.sourceLanguage,
+    targetLanguage: input.targetLanguage,
   });
 
   pruneOldHistory();
@@ -140,18 +153,22 @@ export interface HistoryRecord {
   outputTokens: number | null;
   cacheCreationInputTokens: number | null;
   cacheReadInputTokens: number | null;
+  sourceLanguage: string | null;
+  targetLanguage: string | null;
 }
 
 const listStmt = db.prepare(`
   SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model,
-         inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens
+         inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens,
+         sourceLanguage, targetLanguage
   FROM history
   ORDER BY createdAt DESC
 `);
 
 const getStmt = db.prepare(`
   SELECT id, createdAt, imagePath, imageMimeType, originalText, translatedText, model,
-         inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens
+         inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens,
+         sourceLanguage, targetLanguage
   FROM history
   WHERE id = ?
 `);

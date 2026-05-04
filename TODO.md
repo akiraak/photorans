@@ -1,6 +1,31 @@
 # TODO
 
-- [ ] 日->英, 英->日の両方向の翻訳対応
+- [ ] 日->英, 英->日の両方向の翻訳対応 [plan](docs/plans/translation-bidirectional.md)
+  - [x] Phase 1: サーバ双方向対応
+    - [x] Step 1-1: `/translate` プロンプトを双方向対応に書き換え
+    - [x] Step 1-2: JSON schema に `sourceLanguage` / `targetLanguage` を追加
+    - [x] Step 1-3: history テーブルに 2 列追加 (起動時 ALTER TABLE)
+    - [x] Step 1-4: `SaveHistoryInput` / `HistoryRecord` / SQL 文に 2 列を配線
+    - [x] Step 1-5: admin 詳細ラベル動的化 + 一覧表示要否確定
+    - [x] Step 1-6: curl で英→日 / 日→英 手動疎通確認
+  - [ ] Phase 2: iOS Item モデル拡張 + バックフィル
+    - [ ] Step 2-1: `Item` に `sourceLanguage` / `targetLanguage` (optional) 追加
+    - [ ] Step 2-2: SwiftData lightweight migration を公式ドキュメントで裏取り
+    - [ ] Step 2-3: `ItemLanguageBackfill` を起動時に実行
+    - [ ] Step 2-4: `TranslateResponse` 拡張 + `TranslationCoordinator` で書き戻し
+    - [ ] Step 2-5: `TranslationCoordinatorTests` 更新 + `ItemLanguageBackfillTests` 新規
+    - [ ] Step 2-6: xcodegen で pbxproj 再生成して同 commit
+  - [ ] Phase 3: iOS UI ラベル動的化
+    - [ ] Step 3-1: `languageDisplayName` ヘルパを実装
+    - [ ] Step 3-2: `ItemDetailView` のラベルと翻訳方向行を反映
+    - [ ] Step 3-3: `ItemRowView` の方向バッジ要否を判断して反映
+    - [ ] Step 3-4: 既存スナップショット系テストがあれば更新
+  - [ ] Phase 4: TestFlight 実機検証
+    - [ ] Step 4-1: Akira さん確認のうえタグ push
+    - [ ] Step 4-2: 英→日 撮影で訳文・ラベル確認
+    - [ ] Step 4-3: 日→英 撮影で訳文・ラベル確認
+    - [ ] Step 4-4: 既存撮影済み Item が `EN→JA` バックフィルで表示されること確認
+    - [ ] Step 4-5: admin 画面で新規 / 既存両方が正しく描画されること確認
 - [ ] OCRモデルと翻訳モデルを切り替え可能に
   - [ ] 管理画面でモデル別の料金比較ができるように
   - [ ] 管理画面で１アイテムごとの平均料金を表示
