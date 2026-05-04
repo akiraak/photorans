@@ -15,6 +15,8 @@ final class TranslationCoordinatorTests: XCTestCase {
         let response = TranslateResponse(
             originalText: "Hello",
             translatedText: "こんにちは",
+            sourceLanguage: "en",
+            targetLanguage: "ja",
             model: "test-model"
         )
         let coordinator = TranslationCoordinator(
@@ -31,6 +33,8 @@ final class TranslationCoordinatorTests: XCTestCase {
         XCTAssertEqual(item.originalText, "Hello")
         XCTAssertEqual(item.translatedText, "こんにちは")
         XCTAssertEqual(item.model, "test-model")
+        XCTAssertEqual(item.sourceLanguage, "en")
+        XCTAssertEqual(item.targetLanguage, "ja")
         XCTAssertNil(item.failureReason)
     }
 
@@ -45,7 +49,13 @@ final class TranslationCoordinatorTests: XCTestCase {
             translate: { _ in
                 await translateStarted.signal()
                 await proceedTranslate.wait()
-                return TranslateResponse(originalText: "x", translatedText: "y", model: "z")
+                return TranslateResponse(
+                    originalText: "x",
+                    translatedText: "y",
+                    sourceLanguage: "en",
+                    targetLanguage: "ja",
+                    model: "z"
+                )
             },
             loadImage: { _ in Data() }
         )
@@ -116,7 +126,13 @@ final class TranslationCoordinatorTests: XCTestCase {
             container: container,
             translate: { _ in
                 await translateCounter.increment()
-                return TranslateResponse(originalText: "_", translatedText: "_", model: "_")
+                return TranslateResponse(
+                    originalText: "_",
+                    translatedText: "_",
+                    sourceLanguage: "en",
+                    targetLanguage: "ja",
+                    model: "_"
+                )
             },
             loadImage: { _ in
                 await loadAttempts.increment()

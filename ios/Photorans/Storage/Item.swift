@@ -31,6 +31,13 @@ final class Item {
     var translatedText: String?
     var model: String?
 
+    /// 翻訳の方向。`.completed` 時にサーバ判定結果を保存する ISO 639-1 (`"en"` / `"ja"`)。
+    /// 既存データは nil 状態で読み込まれ、`ItemLanguageBackfill` が起動時に
+    /// 旧固定方向 (`"en"` / `"ja"`) で埋める。SwiftData の lightweight migration
+    /// が optional プロパティ追加を自動処理するため明示的な MigrationPlan は不要。
+    var sourceLanguage: String?
+    var targetLanguage: String?
+
     /// `.failed` 時のみ非 nil。ユーザーに見せるエラーメッセージ。
     var failureReason: String?
 
@@ -51,6 +58,8 @@ final class Item {
         originalText: String? = nil,
         translatedText: String? = nil,
         model: String? = nil,
+        sourceLanguage: String? = nil,
+        targetLanguage: String? = nil,
         failureReason: String? = nil,
         retryCount: Int = 0,
         group: ItemGroup? = nil
@@ -62,6 +71,8 @@ final class Item {
         self.originalText = originalText
         self.translatedText = translatedText
         self.model = model
+        self.sourceLanguage = sourceLanguage
+        self.targetLanguage = targetLanguage
         self.failureReason = failureReason
         self.retryCount = retryCount
         self.group = group

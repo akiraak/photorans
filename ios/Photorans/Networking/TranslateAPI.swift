@@ -3,6 +3,8 @@ import Foundation
 struct TranslateResponse: Decodable, Equatable, Sendable {
     let originalText: String
     let translatedText: String
+    let sourceLanguage: String
+    let targetLanguage: String
     let model: String
 }
 

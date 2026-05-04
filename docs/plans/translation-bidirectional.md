@@ -159,12 +159,12 @@ final class Item {
 
 ### Phase 2: iOS Item モデル拡張 + バックフィル
 
-- [ ] Step 2-1: `Item` に `sourceLanguage` / `targetLanguage` (optional `String`) を追加
-- [ ] Step 2-2: SwiftData lightweight migration の挙動を公式ドキュメントで裏取りし、必要なら `Schema` / `MigrationPlan` を整備 (推測実装禁止)
-- [ ] Step 2-3: `ItemLanguageBackfill` を新規追加し、`PhotoransApp.body.task` で `PendingItemRecovery` より前に呼ぶ
-- [ ] Step 2-4: `TranslateResponse` に 2 フィールド追加、`TranslationCoordinator.runTranslation` で書き戻し
-- [ ] Step 2-5: `TranslationCoordinatorTests` の mock 更新 + `ItemLanguageBackfillTests` 新規追加
-- [ ] Step 2-6: `ios/project.yml` の対象ファイル追加に伴い `xcodegen` で pbxproj 再生成して同 commit (XcodeGen メモリ準拠)
+- [x] Step 2-1: `Item` に `sourceLanguage` / `targetLanguage` (optional `String`) を追加
+- [x] Step 2-2: SwiftData lightweight migration の挙動を公式ドキュメントで裏取りし、必要なら `Schema` / `MigrationPlan` を整備 (推測実装禁止) — 結論: optional プロパティ追加は非破壊変更のため自動処理、明示的な MigrationPlan 不要
+- [x] Step 2-3: `ItemLanguageBackfill` を新規追加し、`PhotoransApp.body.task` で `PendingItemRecovery` より前に呼ぶ
+- [x] Step 2-4: `TranslateResponse` に 2 フィールド追加、`TranslationCoordinator.runTranslation` で書き戻し
+- [x] Step 2-5: `TranslationCoordinatorTests` の mock 更新 + `ItemLanguageBackfillTests` 新規追加
+- [x] Step 2-6: `ios/project.yml` の対象ファイル追加に伴い `xcodegen` で pbxproj 再生成して同 commit (XcodeGen メモリ準拠)
 
 ### Phase 3: iOS UI ラベル動的化
 

@@ -8,13 +8,13 @@
     - [x] Step 1-4: `SaveHistoryInput` / `HistoryRecord` / SQL 文に 2 列を配線
     - [x] Step 1-5: admin 詳細ラベル動的化 + 一覧表示要否確定
     - [x] Step 1-6: curl で英→日 / 日→英 手動疎通確認
-  - [ ] Phase 2: iOS Item モデル拡張 + バックフィル
-    - [ ] Step 2-1: `Item` に `sourceLanguage` / `targetLanguage` (optional) 追加
-    - [ ] Step 2-2: SwiftData lightweight migration を公式ドキュメントで裏取り
-    - [ ] Step 2-3: `ItemLanguageBackfill` を起動時に実行
-    - [ ] Step 2-4: `TranslateResponse` 拡張 + `TranslationCoordinator` で書き戻し
-    - [ ] Step 2-5: `TranslationCoordinatorTests` 更新 + `ItemLanguageBackfillTests` 新規
-    - [ ] Step 2-6: xcodegen で pbxproj 再生成して同 commit
+  - [x] Phase 2: iOS Item モデル拡張 + バックフィル
+    - [x] Step 2-1: `Item` に `sourceLanguage` / `targetLanguage` (optional) 追加
+    - [x] Step 2-2: SwiftData lightweight migration を公式ドキュメントで裏取り
+    - [x] Step 2-3: `ItemLanguageBackfill` を起動時に実行
+    - [x] Step 2-4: `TranslateResponse` 拡張 + `TranslationCoordinator` で書き戻し
+    - [x] Step 2-5: `TranslationCoordinatorTests` 更新 + `ItemLanguageBackfillTests` 新規
+    - [x] Step 2-6: xcodegen で pbxproj 再生成して同 commit
   - [ ] Phase 3: iOS UI ラベル動的化
     - [ ] Step 3-1: `languageDisplayName` ヘルパを実装
     - [ ] Step 3-2: `ItemDetailView` のラベルと翻訳方向行を反映

@@ -93,6 +93,8 @@ actor TranslationCoordinator {
             item.originalText = response.originalText
             item.translatedText = response.translatedText
             item.model = response.model
+            item.sourceLanguage = response.sourceLanguage
+            item.targetLanguage = response.targetLanguage
             item.failureReason = nil
         case .failure(let error):
             item.status = .failed

@@ -26,6 +26,12 @@ struct PhotoransApp: App {
             RootView()
                 .environment(\.translationCoordinator, coordinator)
                 .task { [coordinator, container] in
+                    // 双方向翻訳対応より前に作られた Item の言語フィールドを旧固定方向で埋める
+                    // (Plan 双方向翻訳 Phase 2 Step 2-3)。`PendingItemRecovery` より前に走らせて、
+                    // recovery 経由で `.processing` が `.completed` に書き戻される際の値とは
+                    // 競合しない (新規結果は `TranslationCoordinator` が AI 判定値で上書きする)。
+                    await ItemLanguageBackfill.runIfNeeded(container: container)
+
                     // 起動時に `.processing` で残っている Item を再開する (Plan Step 5.3 / 5.4 / S6 a)。
                     // `StoreBootstrap` のフォールバック直後でも、新ストアは空のためゼロ件で no-op。
                     // `[coordinator, container]` で actor / Sendable 値だけを明示的に捕捉し、
