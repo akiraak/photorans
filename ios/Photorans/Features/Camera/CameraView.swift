@@ -11,6 +11,7 @@ import SwiftUI
 struct CameraView: View {
     let targetGroup: ItemGroup?
     var onCaptured: @MainActor () -> Void = {}
+    var onClose: @MainActor () -> Void = {}
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.translationCoordinator) private var translationCoordinator
@@ -45,6 +46,8 @@ struct CameraView: View {
             default:
                 EmptyView()
             }
+
+            closeButton
         }
         .task {
             await viewModel.onAppear()
@@ -148,6 +151,22 @@ struct CameraView: View {
         }
         .disabled(viewModel.isCapturing)
         .accessibilityLabel("撮影")
+    }
+
+    private var closeButton: some View {
+        Button {
+            onClose()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(.black.opacity(0.5)))
+        }
+        .accessibilityLabel("閉じる")
+        .padding(.top, 12)
+        .padding(.leading, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var permissionDeniedOverlay: some View {

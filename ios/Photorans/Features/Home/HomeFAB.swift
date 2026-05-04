@@ -27,7 +27,8 @@ struct HomeFAB: View {
         .fullScreenCover(isPresented: $isShowingCamera) {
             CameraView(
                 targetGroup: scope.targetGroup,
-                onCaptured: { isShowingCamera = false }
+                onCaptured: { isShowingCamera = false },
+                onClose: { isShowingCamera = false }
             )
         }
     }
