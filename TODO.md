@@ -1,21 +1,6 @@
 # TODO
 
-- [ ] 未分類にアイテムがいくつか存在するのに、グループに一度入った後に画面トップの未分類ボタンから移動するとアイテムが何もないというバグの修正 [plan](docs/plans/unclassified-segment-empty-bug.md)
-  - [x] Phase 1 Step 1.1: `RootView` に Picker + `ZStack + opacity` 骨組み (selectedSegment State 追加)
-  - [x] Phase 1 Step 1.2: `HomeView` から Picker 描画と selectedSegment State を削除
-  - [x] Phase 1 Step 1.3: `RootView` グループモード branch に NavigationStack + HomeView(scope:.root) を配線
-  - [x] Phase 1 Step 1.4: `RootView` 未分類モード branch に UnclassifiedListView を配線
-  - [x] Phase 1 Step 1.5: `SegmentScope.defaultSegment` 削除
-  - [x] Phase 1 Step 1.6: `HomeQueries` 改修 (`filterItems` / `directItems` 削除 + `HomeRowEntry` + `directContents(group:)` 追加)
-  - [x] Phase 1 Step 1.7: `UnclassifiedListView` を scope 非依存化 + `HomeFAB(scope:.root)` overlay 追加
-  - [x] Phase 1 Step 1.8: `GroupListView` を Group X で「子 Group + 子 Item」混在表示に改修
-  - [x] Phase 1 Step 1.9: `SegmentQueryTests` の更新 + 混在表示テスト追加
-  - [x] Phase 1 Step 1.10: ドキュメントコメント整合
-  - [ ] Phase 2 Step 2.1: ローカル / シミュレータ確認
-  - [ ] Phase 2 Step 2.2: タグ push → Bitrise → TestFlight
-  - [ ] Phase 2 Step 2.3: 実機確認 (Picker 固定アニメ / モード状態保持 / 混在表示 / 撮影保存先)
-  - [ ] Phase 2 Step 2.4: NG ならプラン書き直し
-  - [ ] Phase 2 Step 2.5: DONE 移送 + plan archive
+- [ ] クライアントからサーバへのアクセスをngrokのドメインに変更 synergistic-wilburn-overclean.ngrok-free.dev
 - [ ] 翻訳中アニメーションの変更
 - [ ] OCRモデルと翻訳モデルを切り替え可能に
   - [ ] 管理画面でモデル別の料金比較ができるように
