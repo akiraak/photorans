@@ -1,10 +1,5 @@
 # TODO
 
-- [ ] 翻訳中アニメーションの変更 [plan](docs/plans/translation-progress-animation.md)
-  - [x] Phase0 案決定 → **案 B (Typing dots)** 単独採用
-  - [ ] Phase1 実装 (`TranslationProgressIndicator` 新設 + Row/Detail 差し替え + `ShimmerOverlay.swift` 削除 + XcodeGen 再生成)
-  - [ ] Phase2 実機確認 (タグ push → Bitrise → TestFlight)
-  - [ ] Phase3 TODO/DONE 移送 + plan archive
 - [ ] 日->英, 英->日の両方向の翻訳対応
 - [ ] OCRモデルと翻訳モデルを切り替え可能に
   - [ ] 管理画面でモデル別の料金比較ができるように
