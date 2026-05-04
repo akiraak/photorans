@@ -2,7 +2,7 @@ import SwiftUI
 
 /// `.processing` / `.completed` / `.failed` で表示を分岐する Item 行 View (S6 b / c / Plan Step 3.7)。
 ///
-/// - `.processing`: プレースホルダ + `ShimmerOverlay`、行全体に `accessibilityLabel("処理中")`。
+/// - `.processing`: `TranslationProgressIndicator(style: .row)` + 撮影日時、行全体に `accessibilityLabel("処理中")`。
 /// - `.completed`: 訳文プレビュー + 撮影日時 (旧 `HistoryRowView` 相当の最低限表示)。
 /// - `.failed`: 失敗メッセージ + リトライボタン。`retryCount >= maxRetryCount` の Item は
 ///   `TranslationCoordinator.retry` 側で no-op になるためボタンを `disabled` にし、
@@ -39,15 +39,12 @@ struct ItemRowView: View {
 
     private var processingContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("翻訳中…")
-                .font(.body)
-                .foregroundStyle(.secondary)
+            TranslationProgressIndicator(style: .row)
             Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .overlay(ShimmerOverlay())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("処理中")
     }

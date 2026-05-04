@@ -6,7 +6,7 @@ import UIKit
 ///
 /// 表示要素:
 /// - 写真 (`item.imagePath` を `PhotoStorage.absoluteURL` で解決して `UIImage` 化)
-/// - 本文: `.processing` はシマー / `.completed` は訳文 + 原文 / `.failed` は失敗メッセージ + リトライ
+/// - 本文: `.processing` は `TranslationProgressIndicator(style: .detail)` / `.completed` は訳文 + 原文 / `.failed` は失敗メッセージ + リトライ
 /// - メタデータ: 撮影日時 / モデル名 / 所属 Group
 ///
 /// ツールバー (右上 Menu):
@@ -109,17 +109,10 @@ struct ItemDetailView: View {
     }
 
     private var processingBody: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("翻訳中…")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.secondary.opacity(0.1))
-                .frame(height: 96)
-                .overlay(ShimmerOverlay())
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("処理中")
+        TranslationProgressIndicator(style: .detail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("処理中")
     }
 
     private var completedBody: some View {
