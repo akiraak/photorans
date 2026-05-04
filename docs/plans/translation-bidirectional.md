@@ -168,10 +168,10 @@ final class Item {
 
 ### Phase 3: iOS UI ラベル動的化
 
-- [ ] Step 3-1: 言語表示名ヘルパ (`languageDisplayName`) を実装
-- [ ] Step 3-2: `ItemDetailView.completedBody` のラベルを言語サフィックス付きに変更、`metadataSection` に翻訳方向行を追加
-- [ ] Step 3-3: `ItemRowView` に方向バッジを足すか確定 (案: 撮影日時の隣に `EN→JA` の小さなテキスト)、必要なら実装
-- [ ] Step 3-4: 既存 UI のスナップショット系テストがあれば更新 (現状の test 構成を見て判断)
+- [x] Step 3-1: 言語表示名ヘルパ (`languageDisplayName`) を実装 — `Storage/LanguageDisplay.swift` に free function として追加
+- [x] Step 3-2: `ItemDetailView.completedBody` のラベルを言語サフィックス付きに変更、`metadataSection` に翻訳方向行を追加
+- [x] Step 3-3: `ItemRowView` に方向バッジを足すか確定 — 一覧でも方向判別の需要がある (短文 / 数字混在で訳文だけでは判別不可) と判断し追加。`.completed` 行のみ撮影日時の隣に `EN→JA` キャプションを併記。
+- [x] Step 3-4: 既存 UI のスナップショット系テストがあれば更新 — 該当無し (`ios/PhotoransTests/` にスナップショット / View 単体テスト無し) のため no-op
 
 ### Phase 4: TestFlight 実機検証
 

@@ -54,11 +54,22 @@ struct ItemRowView: View {
             Text(item.translatedText ?? "(翻訳なし)")
                 .font(.body)
                 .lineLimit(2)
-            Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
+                if let direction = translationDirection {
+                    Text(direction)
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var translationDirection: String? {
+        guard let source = item.sourceLanguage, !source.isEmpty,
+              let target = item.targetLanguage, !target.isEmpty else { return nil }
+        return "\(source.uppercased())→\(target.uppercased())"
     }
 
     private var failedContent: some View {

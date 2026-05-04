@@ -119,7 +119,7 @@ struct ItemDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             if let translated = item.translatedText, !translated.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("翻訳")
+                    Text(translatedLabel)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(translated)
@@ -129,7 +129,7 @@ struct ItemDetailView: View {
             }
             if let original = item.originalText, !original.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("原文")
+                    Text(originalLabel)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(original)
@@ -138,6 +138,16 @@ struct ItemDetailView: View {
                 }
             }
         }
+    }
+
+    private var translatedLabel: String {
+        let name = languageDisplayName(item.targetLanguage)
+        return name.isEmpty ? "翻訳" : "翻訳 (\(name))"
+    }
+
+    private var originalLabel: String {
+        let name = languageDisplayName(item.sourceLanguage)
+        return name.isEmpty ? "原文" : "原文 (\(name))"
     }
 
     private var failedBody: some View {
@@ -173,9 +183,18 @@ struct ItemDetailView: View {
             if let model = item.model {
                 metadataRow(label: "モデル", value: model)
             }
+            if let direction = translationDirection {
+                metadataRow(label: "翻訳方向", value: direction)
+            }
             metadataRow(label: "フォルダ", value: item.group?.name ?? "未分類")
         }
         .padding(.top, 8)
+    }
+
+    private var translationDirection: String? {
+        guard let source = item.sourceLanguage, !source.isEmpty,
+              let target = item.targetLanguage, !target.isEmpty else { return nil }
+        return "\(source.uppercased()) → \(target.uppercased())"
     }
 
     private func metadataRow(label: String, value: String) -> some View {

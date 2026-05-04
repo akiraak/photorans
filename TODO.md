@@ -15,11 +15,11 @@
     - [x] Step 2-4: `TranslateResponse` 拡張 + `TranslationCoordinator` で書き戻し
     - [x] Step 2-5: `TranslationCoordinatorTests` 更新 + `ItemLanguageBackfillTests` 新規
     - [x] Step 2-6: xcodegen で pbxproj 再生成して同 commit
-  - [ ] Phase 3: iOS UI ラベル動的化
-    - [ ] Step 3-1: `languageDisplayName` ヘルパを実装
-    - [ ] Step 3-2: `ItemDetailView` のラベルと翻訳方向行を反映
-    - [ ] Step 3-3: `ItemRowView` の方向バッジ要否を判断して反映
-    - [ ] Step 3-4: 既存スナップショット系テストがあれば更新
+  - [x] Phase 3: iOS UI ラベル動的化
+    - [x] Step 3-1: `languageDisplayName` ヘルパを実装
+    - [x] Step 3-2: `ItemDetailView` のラベルと翻訳方向行を反映
+    - [x] Step 3-3: `ItemRowView` の方向バッジ要否を判断して反映 (結論: 一覧でも方向判別が欲しいので追加。`.completed` 行に `EN→JA` キャプション併記)
+    - [x] Step 3-4: 既存スナップショット系テストがあれば更新 (該当無し)
   - [ ] Phase 4: TestFlight 実機検証
     - [ ] Step 4-1: Akira さん確認のうえタグ push
     - [ ] Step 4-2: 英→日 撮影で訳文・ラベル確認

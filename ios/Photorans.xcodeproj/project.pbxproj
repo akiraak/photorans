@@ -15,6 +15,7 @@
 		21BEAA934635F0363CEA53E0 /* PendingItemRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B0EFF9477594513A2493FA /* PendingItemRecovery.swift */; };
 		33097B4F33A4B63C673FF7BF /* GroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7C4D7AB76B5D2F03B51C54 /* GroupDetailView.swift */; };
 		3A5C478A7A1295D294394C35 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */; };
+		3A72DBB69D71C2BDDC86A6B8 /* LanguageDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40835CF4FD81A03A75E1C49A /* LanguageDisplay.swift */; };
 		3DDB3B75EAD5B5FB4D23DC60 /* MoveToGroupSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA7DD969B97CE1F3A82061E /* MoveToGroupSheet.swift */; };
 		3E4C70C483E7D53978871A3D /* ItemGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030D2184F6DB986129F80709 /* ItemGroup.swift */; };
 		4227E24F122BDB43868D6893 /* UnclassifiedListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95060F7340F97345DFD6717 /* UnclassifiedListView.swift */; };
@@ -73,6 +74,7 @@
 		345F43A959F869B4B3857F03 /* Photorans.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Photorans.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34F01FE4D65020BAF5ADD8DD /* ImageCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCompressor.swift; sourceTree = "<group>"; };
 		3C60B3E16B0E677495098598 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		40835CF4FD81A03A75E1C49A /* LanguageDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageDisplay.swift; sourceTree = "<group>"; };
 		5D19083941DF31ECD70EC886 /* PhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorage.swift; sourceTree = "<group>"; };
 		64F5F7FD43E1C3BD01EE55E5 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		673E4220F3ACACBFC7DA406E /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				3C60B3E16B0E677495098598 /* Item.swift */,
 				030D2184F6DB986129F80709 /* ItemGroup.swift */,
 				F029E89DB839758BB0D9187E /* ItemStatus.swift */,
+				40835CF4FD81A03A75E1C49A /* LanguageDisplay.swift */,
 				EA8A286F783D81F012546B3B /* StoreBootstrap.swift */,
 			);
 			path = Storage;
@@ -383,6 +386,7 @@
 				8CFEA6ADC7055A06C60E24F1 /* ItemRowView.swift in Sources */,
 				F87849258A298BA821030DF6 /* ItemStatus.swift in Sources */,
 				9D06F7A525CACEC1880BCFCD /* ItemThumbnailView.swift in Sources */,
+				3A72DBB69D71C2BDDC86A6B8 /* LanguageDisplay.swift in Sources */,
 				3DDB3B75EAD5B5FB4D23DC60 /* MoveToGroupSheet.swift in Sources */,
 				21BEAA934635F0363CEA53E0 /* PendingItemRecovery.swift in Sources */,
 				F7FD0FEA4EA35DCC49A3A397 /* PhotoStorage.swift in Sources */,
