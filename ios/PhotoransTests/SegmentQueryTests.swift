@@ -145,32 +145,144 @@ final class SegmentQueryTests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    // MARK: - filterItems (scope 直下のみ)
+    // MARK: - directContents (Group X 直下の子 Group + 子 Item 混在表示)
+    //
+    // Plan: docs/plans/unclassified-segment-empty-bug.md。`GroupListView` の `.group(X)` branch で
+    // X.children と X.items を `[HomeRowEntry]` の 1 リストに混ぜて createdAt 降順で表示する。
 
-    func testFilterItemsAtRootReturnsOnlyUngroupedSortedDesc() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .root)
-
-        // Root では group == nil の Item のみ。`.processing` / `.failed` も含む点に注意 (S14: フィルタ無し)。
-        let ids = result.map { $0.id }
-        XCTAssertEqual(
-            ids,
-            [
-                rootItemCompletedRecent.id,  // +10 min
-                rootItemProcessing.id,       // +5 min
-                rootItemFailed.id,           // +3 min
-                rootItemCompletedOld.id      // +1 min
-            ],
-            "Root は group == nil の Item を createdAt 降順で返す"
+    func testDirectContentsMergesChildrenAndItemsByCreatedAtDesc() throws {
+        // 親 P に 子 Group / 子 Item を交互に配置し、createdAt 降順での混在マージを検証する。
+        let base = Date(timeIntervalSince1970: 1_700_100_000)
+        let minute: TimeInterval = 60
+        let parent = ItemGroup(name: "P", createdAt: base)
+        let childGroupNew = ItemGroup(name: "child-new", createdAt: base.addingTimeInterval(30 * minute), parent: parent)
+        let childGroupOld = ItemGroup(name: "child-old", createdAt: base.addingTimeInterval(5 * minute), parent: parent)
+        let childItemMid = Item(
+            createdAt: base.addingTimeInterval(20 * minute),
+            imagePath: "photos/p_item_mid.jpg",
+            status: .completed,
+            originalText: "mid",
+            translatedText: "中",
+            model: "test",
+            group: parent
         )
+        let childItemOldest = Item(
+            createdAt: base.addingTimeInterval(1 * minute),
+            imagePath: "photos/p_item_old.jpg",
+            status: .completed,
+            originalText: "old",
+            translatedText: "古",
+            model: "test",
+            group: parent
+        )
+        context.insert(parent)
+        context.insert(childGroupNew)
+        context.insert(childGroupOld)
+        context.insert(childItemMid)
+        context.insert(childItemOldest)
+        try context.save()
+
+        let result = HomeQueries.directContents(group: parent)
+
+        // 期待順: childGroupNew (+30) → childItemMid (+20) → childGroupOld (+5) → childItemOldest (+1)
+        XCTAssertEqual(result.count, 4)
+        assertIsGroup(result[0], expectedID: childGroupNew.id)
+        assertIsItem(result[1], expectedID: childItemMid.id)
+        assertIsGroup(result[2], expectedID: childGroupOld.id)
+        assertIsItem(result[3], expectedID: childItemOldest.id)
     }
 
-    func testFilterItemsAtGroupReturnsOnlyDirectChildrenItems() throws {
-        let allItems = try context.fetch(FetchDescriptor<Item>())
-        let result = HomeQueries.filterItems(allItems: allItems, scope: .group(groupA))
+    func testDirectContentsWithOnlyChildren() throws {
+        // 子 Item ゼロ・子 Group のみのケース。createdAt 降順で Group が並ぶ。
+        let base = Date(timeIntervalSince1970: 1_700_200_000)
+        let minute: TimeInterval = 60
+        let parent = ItemGroup(name: "OnlyGroups", createdAt: base)
+        let cgNew = ItemGroup(name: "g-new", createdAt: base.addingTimeInterval(10 * minute), parent: parent)
+        let cgOld = ItemGroup(name: "g-old", createdAt: base.addingTimeInterval(2 * minute), parent: parent)
+        context.insert(parent)
+        context.insert(cgNew)
+        context.insert(cgOld)
+        try context.save()
 
-        // Group A の直下 Item のみ。子孫 (groupA1, groupA1a) の Item は含めない。
-        XCTAssertEqual(result.map { $0.id }, [groupAItemCompleted.id])
+        let result = HomeQueries.directContents(group: parent)
+
+        XCTAssertEqual(result.count, 2)
+        assertIsGroup(result[0], expectedID: cgNew.id)
+        assertIsGroup(result[1], expectedID: cgOld.id)
+    }
+
+    func testDirectContentsWithOnlyItems() throws {
+        // 子 Group ゼロ・子 Item のみのケース。createdAt 降順で Item が並ぶ。
+        let base = Date(timeIntervalSince1970: 1_700_300_000)
+        let minute: TimeInterval = 60
+        let parent = ItemGroup(name: "OnlyItems", createdAt: base)
+        let itemNew = Item(
+            createdAt: base.addingTimeInterval(10 * minute),
+            imagePath: "photos/oi_new.jpg",
+            status: .completed,
+            originalText: "n",
+            translatedText: "新",
+            model: "test",
+            group: parent
+        )
+        let itemOld = Item(
+            createdAt: base.addingTimeInterval(1 * minute),
+            imagePath: "photos/oi_old.jpg",
+            status: .completed,
+            originalText: "o",
+            translatedText: "古",
+            model: "test",
+            group: parent
+        )
+        context.insert(parent)
+        context.insert(itemNew)
+        context.insert(itemOld)
+        try context.save()
+
+        let result = HomeQueries.directContents(group: parent)
+
+        XCTAssertEqual(result.count, 2)
+        assertIsItem(result[0], expectedID: itemNew.id)
+        assertIsItem(result[1], expectedID: itemOld.id)
+    }
+
+    func testDirectContentsWithEmptyChildrenAndItems() throws {
+        // 子 Group / 子 Item 両方空の Group は空配列を返す (空状態 UI へのフォールバックは呼び出し側責務)。
+        let parent = ItemGroup(name: "Empty", createdAt: Date(timeIntervalSince1970: 1_700_400_000))
+        context.insert(parent)
+        try context.save()
+
+        XCTAssertTrue(HomeQueries.directContents(group: parent).isEmpty)
+    }
+
+    // MARK: - directContents helpers
+
+    private func assertIsGroup(
+        _ entry: HomeRowEntry,
+        expectedID: UUID,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        switch entry {
+        case .group(let g):
+            XCTAssertEqual(g.id, expectedID, file: file, line: line)
+        case .item:
+            XCTFail("Expected .group(\(expectedID)) but got .item", file: file, line: line)
+        }
+    }
+
+    private func assertIsItem(
+        _ entry: HomeRowEntry,
+        expectedID: UUID,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        switch entry {
+        case .item(let i):
+            XCTAssertEqual(i.id, expectedID, file: file, line: line)
+        case .group:
+            XCTFail("Expected .item(\(expectedID)) but got .group", file: file, line: line)
+        }
     }
 
     // MARK: - filterGroups (scope 直下 + 並び順)
@@ -262,7 +374,12 @@ final class SegmentQueryTests: XCTestCase {
 // 以下 8 ケースを XCTest メソッドとしては削除した。再導入時の検証仕様リファレンスとして
 // 各ケースが検証していた仕様を箇条書きで残す。
 //
-// filterItems (検索文字列を受け取る branch):
+// 注: 旧 `HomeQueries.filterItems` は本ファイル冒頭の `directContents` 改修プラン
+// (docs/plans/unclassified-segment-empty-bug.md) で関数ごと撤去済。下記の「filterItems」項目は
+// 旧テスト名 + 旧実装上の挙動の **仕様リファレンス** として残す。再導入時はそれぞれ
+// 「未分類モード本文用の検索クエリ」「グループモード本文用の検索クエリ」を新規設計する想定。
+//
+// filterItems (Item 一覧の検索文字列を受け取る branch — 旧 HomeQueries.filterItems 相当):
 // - testFilterItemsWhitespaceOnlySearchTreatedAsEmpty
 //     → 空白のみの searchText は trim 後に空文字列扱い (= scope 直下のみを返す)。
 // - testFilterItemsSearchCrossesAllScopesAndOnlyCompleted
@@ -276,7 +393,7 @@ final class SegmentQueryTests: XCTestCase {
 //     → `.processing` / `.failed` Item は originalText / translatedText が nil なので contains に当たらない
 //       ことを確認 (status フィルタの間接保証)。
 //
-// filterGroups (検索文字列を受け取る branch):
+// filterGroups (検索文字列を受け取る branch — 現存 `HomeQueries.filterGroups` の検索拡張版):
 // - testFilterGroupsSearchAtRootIncludesAllDescendants
 //     → Root scope では `allGroups` 全件 (子孫すべて) が検索対象。"A" で A / A1 / A1a がヒット。
 // - testFilterGroupsSearchAtGroupExcludesSelfAndOutsideScope
@@ -284,8 +401,10 @@ final class SegmentQueryTests: XCTestCase {
 // - testFilterGroupsSearchIsCaseInsensitive
 //     → `localizedCaseInsensitiveContains` 相当 ("bグループ" で "Bグループ" にマッチ)。
 //
-// 再導入時の関連実装:
-// - `HomeQueries.filterItems(allItems:scope:searchText:)` / `filterGroups(allGroups:scope:searchText:)` の searchText 引数復活
+// 再導入時の関連実装 (※ Picker は `RootView` 直下に固定 / `HomeView` は グループモード専用 / `UnclassifiedListView`
+// は scope 非依存 という現状の構造に合わせて再設計する必要あり):
+// - 「未分類モード用」Item 検索クエリ (旧 `filterItems(allItems:scope:searchText:)` の役割) を新設
+// - `filterGroups(allGroups:scope:searchText:)` への `searchText` 引数復活
 // - Group 検索の子孫展開ヘルパ `descendantGroups(allGroups:scope:)` + `collectDescendants(of:into:)` の復活
-// - `HomeView` の `@State searchText` + `.searchable(text:prompt:)` の復活、`GroupListView` / `UnclassifiedListView`
-//   の `searchText: String` 引数 + `ContentUnavailableView.search(text:)` 分岐の復活
+// - `RootView` (or 該当モード View) の `@State searchText` + `.searchable(text:prompt:)` の復活、
+//   各リスト View の `searchText: String` 引数 + `ContentUnavailableView.search(text:)` 分岐の復活

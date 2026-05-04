@@ -1,30 +1,65 @@
 import SwiftData
 import SwiftUI
 
-/// 「グループ」セグメントの本文 (S3-1)。
+/// 「グループ」モードの本文 (S3-1 / Plan: docs/plans/unclassified-segment-empty-bug.md)。
 ///
 /// PoC Step 0.1 の結論により Predicate を使わず、リレーション直読み + in-memory フィルタ + ソートで統一する。
 ///
-/// フィルタ + ソートは `HomeQueries.filterGroups` (Plan Step 5.2) に純関数化されており、本 View は
-/// `@Query` で取得した全 Group をそれに渡すだけ:
-/// scope 直下の Group のみ (Root → parent == nil / Group X → X.children) を、
-/// 直下 Item の最新 createdAt 降順 (Item ゼロの中間 Group は末尾) で表示。
+/// 表示分岐 (scope 別):
+/// - `.root` → `HomeQueries.filterGroups` (`parent == nil` の Group のみ。Item は表示しない。
+///   ルート直下 Item は未分類モードに分離されている)。直下 Item の最新 createdAt 降順 (Item ゼロの中間 Group は末尾)。
+/// - `.group(X)` → `HomeQueries.directContents(group: X)` (X.children + X.items を `HomeRowEntry` の
+///   1 リストに混在、createdAt 降順)。子 Group は `rowView(for:)` + `NavigationLink(value: ItemGroup)`、
+///   子 Item は `ItemRowView` + `NavigationLink(value: Item)` で行を発行する。
 ///
-/// 行タップで `NavigationLink(value: ItemGroup)` を発行し、destination 解決は `RootView` に集約された
-/// `.navigationDestination(for: ItemGroup.self)` が担当する (Step 0.3 で確定。子 View では destination を再宣言しない)。
+/// destination 解決は `RootView` のグループモード NavigationStack に集約された
+/// `.navigationDestination(for: ItemGroup.self)` / `.navigationDestination(for: Item.self)` が担当する
+/// (Step 0.3 で確定。子 View では destination を再宣言しない)。
 struct GroupListView: View {
     let scope: SegmentScope
 
     @Query private var allGroups: [ItemGroup]
 
     var body: some View {
-        let groups = HomeQueries.filterGroups(allGroups: allGroups, scope: scope)
+        switch scope {
+        case .root:
+            rootBody
+        case .group(let g):
+            groupBody(group: g)
+        }
+    }
+
+    @ViewBuilder
+    private var rootBody: some View {
+        let groups = HomeQueries.filterGroups(allGroups: allGroups, scope: .root)
         if groups.isEmpty {
             emptyView
         } else {
             List(groups, id: \.id) { group in
                 NavigationLink(value: group) {
                     rowView(for: group)
+                }
+            }
+            .listStyle(.plain)
+        }
+    }
+
+    @ViewBuilder
+    private func groupBody(group: ItemGroup) -> some View {
+        let entries = HomeQueries.directContents(group: group)
+        if entries.isEmpty {
+            emptyView
+        } else {
+            List(entries) { entry in
+                switch entry {
+                case .group(let childGroup):
+                    NavigationLink(value: childGroup) {
+                        rowView(for: childGroup)
+                    }
+                case .item(let item):
+                    NavigationLink(value: item) {
+                        ItemRowView(item: item)
+                    }
                 }
             }
             .listStyle(.plain)

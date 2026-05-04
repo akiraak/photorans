@@ -1,28 +1,22 @@
 import SwiftData
 import SwiftUI
 
-/// Root と Group 詳細で共通利用するセグメントスクリーン (S1 / S13-2)。
+/// グループモード専用のセグメントスクリーン (S1 / S13-2)。
 ///
-/// 上部に `[未分類 | グループ]` の Segmented Picker、本文に対応するリスト、
-/// 右下に 2 段スタックの `HomeFAB` (Group 作成 / カメラ) を重ねる。
+/// Picker `[未分類 | グループ]` は **`RootView` 直下に固定** (Plan: docs/plans/unclassified-segment-empty-bug.md)。
+/// `HomeView` 自体は **グループモード branch でのみ描画される** ため、Picker 描画と
+/// `selectedSegment` State は HomeView から撤去済み。本文は `GroupListView(scope:)` に直結する。
+///
+/// 本体: breadcrumb + GroupListView + 右下 `HomeFAB` overlay。
 ///
 /// `navigationTitle` / `navigationDestination` は宣言しない:
-/// - destination は `RootView` の NavigationStack root に集約 (Step 0.3 / 2.3)。子 View での再宣言は禁止。
+/// - destination は `RootView` の グループモード NavigationStack root に集約 (Step 0.3 / 2.3)。子 View での再宣言は禁止。
 ///
 /// ナビバー削除 + パンくずリンク導入 (Plan: docs/plans/breadcrumb-navigation.md / TestFlight v0.1.18 反映):
 /// - `path: Binding<NavigationPath>?` を任意で受け取る。Root インスタンスでは nil で渡され、
 ///   `GroupDetailView` インスタンスでは `RootView.@State path` の Binding が伝播される。
-/// - `scope` が `.group` かつ `selectedSegment == .groups` かつ `path != nil` のときだけ
-///   Picker 直下にパンくず行を描画する。Root / 未分類タブ / path 非伝搬は描画しない。
+/// - `scope` が `.group` かつ `path != nil` のときだけパンくず行を描画する。Root / path 非伝搬は描画しない。
 /// - パンくず行は **`[←] 親 › 子 › [現在地] [⋯]`** の 1 行に統合する (TestFlight v0.1.18 フィードバック)。
-///   従前のカスタム上部行は廃止し、戻るボタンとメニュー (名前を編集 / グループ削除) はこの行に収める。
-/// - 未分類タブでは行ごと出さない。戻りたい場合は edge swipe / グループタブへ切替後の戻るボタンを使う。
-///
-/// 初期セグメント (Plan: docs/plans/group-default-segment.md):
-/// - Root → `.unclassified` (S2 既定値維持)
-/// - Group 詳細 → `.groups` (親→子は必ずグループタブ経由で遷移するため、遷移先で `未分類` から
-///   始めると操作の連続性が断ち切られる)
-/// `scope.defaultSegment` で解決する。
 struct HomeView: View {
     let scope: SegmentScope
     var path: Binding<NavigationPath>? = nil
@@ -31,35 +25,11 @@ struct HomeView: View {
     /// Group 詳細から渡される「グループ削除」ハンドラ。Root では nil。
     var onDeleteGroup: (() -> Void)? = nil
 
-    @State private var selectedSegment: HomeSegment
-
-    init(
-        scope: SegmentScope,
-        path: Binding<NavigationPath>? = nil,
-        onRenameGroup: (() -> Void)? = nil,
-        onDeleteGroup: (() -> Void)? = nil
-    ) {
-        self.scope = scope
-        self.path = path
-        self.onRenameGroup = onRenameGroup
-        self.onDeleteGroup = onDeleteGroup
-        self._selectedSegment = State(initialValue: scope.defaultSegment)
-    }
-
     var body: some View {
         VStack(spacing: 0) {
-            Picker("セグメント", selection: $selectedSegment) {
-                ForEach(HomeSegment.allCases) { segment in
-                    Text(segment.label).tag(segment)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-
             breadcrumbRow
 
-            content
+            GroupListView(scope: scope)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .overlay(alignment: .bottomTrailing) {
@@ -74,11 +44,10 @@ struct HomeView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
     }
 
-    /// `[←] 親 › 子 › [現在地] [⋯]` の 1 行。グループタブ + .group scope + path 伝搬時のみ表示。
+    /// `[←] 親 › 子 › [現在地] [⋯]` の 1 行。.group scope + path 伝搬時のみ表示。
     @ViewBuilder
     private var breadcrumbRow: some View {
         if case .group(let g) = scope,
-           selectedSegment == .groups,
            let pathBinding = path {
             let chain = BreadcrumbView.ancestorChain(of: g)
             HStack(spacing: 8) {
@@ -128,19 +97,9 @@ struct HomeView: View {
             .padding(.vertical, 6)
         }
     }
-
-    @ViewBuilder
-    private var content: some View {
-        switch selectedSegment {
-        case .groups:
-            GroupListView(scope: scope)
-        case .unclassified:
-            UnclassifiedListView(scope: scope)
-        }
-    }
 }
 
-/// HomeView 上部の Segmented Picker 用のセグメント識別子。
+/// `RootView` 直下に固定された Segmented Picker のセグメント識別子。
 ///
 /// 並び順は `[未分類 | グループ]` (S2 既定値「未分類」を左側に置く)。`allCases` の順序が
 /// Picker の表示順序になるため、enum の宣言順序を変更しないこと。

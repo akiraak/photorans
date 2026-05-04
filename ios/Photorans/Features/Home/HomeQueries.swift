@@ -1,43 +1,29 @@
 import Foundation
 import SwiftData
 
-/// `HomeView` のセグメント表示を担う純関数群 (Plan Step 5.2 / 5.5)。
+/// グループモード (`HomeView` → `GroupListView`) 配下のリスト表示を担う純関数群 (Plan Step 5.2 / 5.5)。
 ///
 /// 設計の要点:
 /// - SwiftData の `#Predicate` を使わず、`@Query` で取得した全件 + リレーション直読みの結果を
 ///   in-memory フィルタ + ソートする (Plan PoC Step 0.1 の方針を継承)。
-/// - 表示分岐: 現セグメント / scope に応じた **直下のみ** を表示する。
-///   - Item: Root → `group == nil`、Group X → `X.items` を createdAt 降順。
-///   - Group: Root → `parent == nil`、Group X → `X.children` を直下 Item の最新 createdAt 降順
-///     (Item ゼロの中間 Group は末尾)。
+/// - グループモードの表示分岐 (Plan: docs/plans/unclassified-segment-empty-bug.md):
+///   - Root → `parent == nil` の Group のみ (Item は表示しない。ルート直下 Item は未分類モードに分離)。
+///   - Group X → X 直下の **子 Group + 子 Item を 1 リストに混在** させ createdAt 降順
+///     (`directContents(group:)` + `HomeRowEntry`)。
+/// - 「未分類」モードは `RootView` 直下の独立 NavigationStack で `UnclassifiedListView` が
+///   `@Query(sort:)` + in-memory `.filter { $0.group == nil }` を直接実行するので本ファイルの関数は経由しない
+///   (Step 1.6 で `filterItems` / `directItems` を撤去済 — PoC Step 0.1 の理由により optional to-one の
+///   `nil` 比較は `#Predicate` ではなく in-memory フィルタで行う)。
 /// - 純関数化 (`enum HomeQueries` + static func) で View から切り離し、`SegmentQueryTests`
 ///   (Plan Step 5.5) のフィクスチャ駆動テストの対象にする。
 ///
-/// 検索 UI はパンくず実装で一旦削除済み。再導入時は `searchText` 引数と検索 branch
-/// (Item: scope 無視で全 `.completed` 横断 / Group: scope 配下子孫の名前 contains) を再追加する
-/// (TODO「検索 UI を再導入する」+ `SegmentQueryTests` 末尾の仕様コメント参照)。
+/// 検索 UI はパンくず実装で一旦削除済み。再導入時の仕様リファレンスは `SegmentQueryTests` 末尾の
+/// コメントブロックに残してある (TODO「検索 UI を再導入する」)。
 enum HomeQueries {
-    /// 「未分類」セグメント本文の表示リスト。scope 直下の Item を createdAt 降順で返す
-    /// (Root → group == nil の Item / Group X → X.items)。
-    static func filterItems(allItems: [Item], scope: SegmentScope) -> [Item] {
-        directItems(allItems: allItems, scope: scope)
-            .sorted { $0.createdAt > $1.createdAt }
-    }
-
     /// 「グループ」セグメント本文の表示リスト。scope 直下の Group のみを「直下 Item の最新
     /// createdAt 降順 (空 Group は末尾)」で返す。
     static func filterGroups(allGroups: [ItemGroup], scope: SegmentScope) -> [ItemGroup] {
         sortDirectGroups(directGroups(allGroups: allGroups, scope: scope))
-    }
-
-    /// scope 直下の Item。
-    static func directItems(allItems: [Item], scope: SegmentScope) -> [Item] {
-        switch scope {
-        case .root:
-            return allItems.filter { $0.group == nil }
-        case .group(let g):
-            return g.items
-        }
     }
 
     /// scope 直下の Group。
@@ -48,6 +34,18 @@ enum HomeQueries {
         case .group(let g):
             return g.children
         }
+    }
+
+    /// Group X 直下の **子 Group + 子 Item を 1 リストに混在** させた表示用配列を `createdAt` 降順で返す
+    /// (Plan: docs/plans/unclassified-segment-empty-bug.md「確定した設計」)。
+    ///
+    /// 並び順は `createdAt` 降順のみで、Group / Item のセクション分けは行わない (シンプル優先)。
+    /// Root scope (`parent == nil` の Group のみ表示) には用いず、`GroupListView` の `.group(X)` branch
+    /// 専用。
+    static func directContents(group: ItemGroup) -> [HomeRowEntry] {
+        let entries: [HomeRowEntry] =
+            group.children.map(HomeRowEntry.group) + group.items.map(HomeRowEntry.item)
+        return entries.sorted { $0.createdAt > $1.createdAt }
     }
 
     /// グループ行のサムネに使う代表 Item (`docs/plans/list-thumbnails.md` Step 4)。
@@ -75,6 +73,31 @@ enum HomeQueries {
             case (nil, nil):
                 return lhs.createdAt > rhs.createdAt
             }
+        }
+    }
+}
+
+/// Group 詳細でのリスト行 1 件を表す sum type (Plan: docs/plans/unclassified-segment-empty-bug.md)。
+///
+/// `GroupListView` の `.group(X)` branch で「子 Group + 子 Item」を 1 リストに混在させるために用いる。
+/// `Identifiable` の `id` は元モデルの UUID を流用 (`Item.id` / `ItemGroup.id` の両方が
+/// `@Attribute(.unique) UUID` で実質的に衝突しない)。
+enum HomeRowEntry: Identifiable {
+    case group(ItemGroup)
+    case item(Item)
+
+    var id: UUID {
+        switch self {
+        case .group(let g): return g.id
+        case .item(let i): return i.id
+        }
+    }
+
+    /// 混在ソート用。Group も Item も `createdAt: Date` を持つので 1 軸で降順ソートできる。
+    var createdAt: Date {
+        switch self {
+        case .group(let g): return g.createdAt
+        case .item(let i): return i.createdAt
         }
     }
 }

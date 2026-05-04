@@ -79,3 +79,17 @@ Phase 1 のみ。差分は 10〜15 行程度。
 - リーフ Group (子グループなし、Item のみ) を初めて開いたとき、グループタブの空状態 (`folder` アイコン + 「グループはまだありません」) が表示され、ユーザーは `未分類` タブへ手動切替を 1 回行う必要がある。MVP では受け入れ、リーフ体感が悪ければ Option C (子グループの有無で既定を切替) を後追い検討
 - `NavigationStack` の destination 保持挙動に依存 (戻ったときの親の `@State` が維持される)。これは標準挙動なので破綻しないはずだが、Step 1.5 の実機確認で念のため検証
 - `HomeView` に明示 `init` を追加することで、既存の named-argument 呼び出し側 (`RootView` / `GroupDetailView`) との API 互換性を維持する必要がある。`scope` / `path` / `onRenameGroup` / `onDeleteGroup` の引数名と順序は維持する
+
+---
+
+## 後続プランによる上書き (2026-05-04 追記)
+
+本プランの前提は `docs/plans/unclassified-segment-empty-bug.md` (2026-05-04 完了) によって以下のとおり**完全に置き換えられた**:
+
+- Picker `[未分類 | グループ]` を `RootView` 直下に固定し、「アプリ全体のグローバルなモードフィルタ」へ昇格
+- `HomeView` 内の `@State selectedSegment` と Picker 描画は撤去 (`HomeView` はグループモード専用に簡略化)
+- 上記に伴い「scope ベースの初期セグメント切替」という本プランの中心概念が無意味化し、`SegmentScope.defaultSegment` も削除
+- `HomeView` の明示的 `init` も撤去 (memberwise init で十分)
+- 未分類モードに独立 `NavigationStack` を立て、`UnclassifiedListView` は scope 非依存に再設計
+
+本ファイルは「リーフ Group の初期表示 UX をどう設計するか」の検討履歴として温存する。実装上の前提は最新プランを参照すること。

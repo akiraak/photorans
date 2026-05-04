@@ -3,27 +3,60 @@ import SwiftUI
 
 /// アプリのルート画面。
 ///
-/// NavigationStack 直下に `HomeView(scope: .root)` を配置し、ここに
-/// `.navigationDestination(for: ItemGroup.self)` / `.navigationDestination(for: Item.self)` を **集約** する
-/// (Step 0.3 / Step 2.3)。子 View 側 (HomeView / GroupDetailView 等) では destination を再宣言しない。
+/// Picker `[未分類 | グループ]` を **NavigationStack の外側 (= VStack 直下) に固定** し、
+/// `ZStack + opacity` で 未分類モード / グループモード それぞれの NavigationStack を切替する
+/// (Plan: docs/plans/unclassified-segment-empty-bug.md)。階層 push しても Picker は動かない。
 ///
-/// ナビバー削除 + パンくずリンク導入 (Plan: docs/plans/breadcrumb-navigation.md):
-/// - `path` を保持して `NavigationStack(path:)` に渡す。Group 詳細でパンくずから祖先タップで
-///   `path.removeLast(k)` を行うため、Binding で `GroupDetailView` まで配線する (Phase 3)。
-/// - Root では `.toolbar(.hidden, for: .navigationBar)` でナビバー領域を 0pt にする。
+/// 状態:
+/// - `selectedSegment`: グローバルなモードフィルタ。`.unclassified` を初期値とする (S2 既定値維持)
+/// - `path`: グループモードの階層 push 用 (`ItemGroup` / `Item`)
+/// - `unclassifiedPath`: 未分類モードの Item 詳細 push 用 (独立 NavigationStack を持つことで
+///   `NavigationLink(value: Item)` を機能させる)
+///
+/// destination 宣言は両 NavigationStack root に集約する (Step 0.3 / Step 2.3 の方針継続)。
+/// モード切替時は `ZStack + opacity` で identity を維持し、両モードの `NavigationPath` を保持する。
 struct RootView: View {
+    @State private var selectedSegment: HomeSegment = .unclassified
     @State private var path = NavigationPath()
+    @State private var unclassifiedPath = NavigationPath()
 
     var body: some View {
-        NavigationStack(path: $path) {
-            HomeView(scope: .root)
-                .toolbar(.hidden, for: .navigationBar)
-                .navigationDestination(for: ItemGroup.self) { group in
-                    GroupDetailView(group: group, path: $path)
+        VStack(spacing: 0) {
+            Picker("セグメント", selection: $selectedSegment) {
+                ForEach(HomeSegment.allCases) { segment in
+                    Text(segment.label).tag(segment)
                 }
-                .navigationDestination(for: Item.self) { item in
-                    ItemDetailView(item: item)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+
+            ZStack {
+                // 未分類モード: UnclassifiedListView + Item destination のみ集約 (ItemGroup destination は持たない)。
+                // 階層 push は無いが NavigationLink(value: Item) を機能させるため独立 NavigationStack を常駐させる。
+                NavigationStack(path: $unclassifiedPath) {
+                    UnclassifiedListView()
+                        .navigationDestination(for: Item.self) { item in
+                            ItemDetailView(item: item)
+                        }
                 }
+                .opacity(selectedSegment == .unclassified ? 1 : 0)
+                .allowsHitTesting(selectedSegment == .unclassified)
+
+                // グループモード: HomeView(scope: .root) + ItemGroup / Item destinations をこの NavigationStack root に集約
+                NavigationStack(path: $path) {
+                    HomeView(scope: .root)
+                        .toolbar(.hidden, for: .navigationBar)
+                        .navigationDestination(for: ItemGroup.self) { group in
+                            GroupDetailView(group: group, path: $path)
+                        }
+                        .navigationDestination(for: Item.self) { item in
+                            ItemDetailView(item: item)
+                        }
+                }
+                .opacity(selectedSegment == .groups ? 1 : 0)
+                .allowsHitTesting(selectedSegment == .groups)
+            }
         }
     }
 }
