@@ -33,7 +33,7 @@ struct GroupListView: View {
     private var rootBody: some View {
         let groups = HomeQueries.filterGroups(allGroups: allGroups, scope: .root)
         if groups.isEmpty {
-            emptyView
+            rootEmptyView
         } else {
             List(groups, id: \.id) { group in
                 NavigationLink(value: group) {
@@ -48,7 +48,7 @@ struct GroupListView: View {
     private func groupBody(group: ItemGroup) -> some View {
         let entries = HomeQueries.directContents(group: group)
         if entries.isEmpty {
-            emptyView
+            groupEmptyView
         } else {
             List(entries) { entry in
                 switch entry {
@@ -67,11 +67,20 @@ struct GroupListView: View {
     }
 
     @ViewBuilder
-    private var emptyView: some View {
+    private var rootEmptyView: some View {
         ContentUnavailableView {
             Label("グループはまだありません", systemImage: "folder")
         } description: {
             Text("翻訳をテーマや用途ごとにグループ化して整理できます。右下の「+」ボタンから新しいグループを作ってください。")
+        }
+    }
+
+    @ViewBuilder
+    private var groupEmptyView: some View {
+        ContentUnavailableView {
+            Label("翻訳もグループもまだありません", systemImage: "tray")
+        } description: {
+            Text("右下のカメラボタンで撮影して翻訳を追加するか、「+」ボタンで新しいグループを作成できます。")
         }
     }
 
