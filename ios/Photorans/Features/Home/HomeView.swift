@@ -82,7 +82,7 @@ struct HomeView: View {
                         Button(role: .destructive) {
                             onDelete()
                         } label: {
-                            Label("グループを削除", systemImage: "trash")
+                            Label("フォルダを削除", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -90,7 +90,7 @@ struct HomeView: View {
                             .foregroundStyle(Color.accentColor)
                             .frame(width: 32, height: 32, alignment: .trailing)
                     }
-                    .accessibilityLabel("グループ メニュー")
+                    .accessibilityLabel("フォルダ メニュー")
                 }
             }
             .padding(.horizontal)
@@ -111,7 +111,7 @@ enum HomeSegment: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .groups: return "グループ"
+        case .groups: return "フォルダ"
         case .unclassified: return "未分類"
         }
     }

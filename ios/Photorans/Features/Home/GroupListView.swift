@@ -69,18 +69,18 @@ struct GroupListView: View {
     @ViewBuilder
     private var rootEmptyView: some View {
         ContentUnavailableView {
-            Label("グループはまだありません", systemImage: "folder")
+            Label("フォルダはまだありません", systemImage: "folder")
         } description: {
-            Text("翻訳をテーマや用途ごとにグループ化して整理できます。右下の「+」ボタンから新しいグループを作ってください。")
+            Text("翻訳をテーマや用途ごとにフォルダで整理できます。右下の「+」ボタンから新しいフォルダを作ってください。")
         }
     }
 
     @ViewBuilder
     private var groupEmptyView: some View {
         ContentUnavailableView {
-            Label("翻訳もグループもまだありません", systemImage: "tray")
+            Label("翻訳もフォルダもまだありません", systemImage: "tray")
         } description: {
-            Text("右下のカメラボタンで撮影して翻訳を追加するか、「+」ボタンで新しいグループを作成できます。")
+            Text("右下のカメラボタンで撮影して翻訳を追加するか、「+」ボタンで新しいフォルダを作成できます。")
         }
     }
 
@@ -129,7 +129,7 @@ struct GroupListView: View {
         let itemCount = group.items.count
         let childCount = group.children.count
         if childCount > 0 {
-            return "\(itemCount) 件 ・ サブグループ \(childCount)"
+            return "\(itemCount) 件 ・ サブフォルダ \(childCount)"
         } else {
             return "\(itemCount) 件"
         }

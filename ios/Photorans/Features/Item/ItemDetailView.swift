@@ -42,7 +42,7 @@ struct ItemDetailView: View {
                     Button {
                         isShowingMoveSheet = true
                     } label: {
-                        Label("グループへ移動", systemImage: "folder")
+                        Label("フォルダへ移動", systemImage: "folder")
                     }
                     Button(role: .destructive) {
                         isShowingDeleteConfirmation = true
@@ -180,7 +180,7 @@ struct ItemDetailView: View {
             if let model = item.model {
                 metadataRow(label: "モデル", value: model)
             }
-            metadataRow(label: "グループ", value: item.group?.name ?? "未分類")
+            metadataRow(label: "フォルダ", value: item.group?.name ?? "未分類")
         }
         .padding(.top, 8)
     }

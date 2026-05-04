@@ -49,12 +49,12 @@ struct GroupDetailView: View {
     /// 確認ダイアログの本文。子 Group の有無で分岐する (S13-3)。
     private var deleteMessage: String {
         if !group.children.isEmpty {
-            return "サブグループ \(group.children.count) 件と、配下の翻訳もすべて削除されます。元には戻せません。"
+            return "サブフォルダ \(group.children.count) 件と、配下の翻訳もすべて削除されます。元には戻せません。"
         }
         if !group.items.isEmpty {
-            return "このグループに含まれる翻訳 \(group.items.count) 件もすべて削除されます。元には戻せません。"
+            return "このフォルダに含まれる翻訳 \(group.items.count) 件もすべて削除されます。元には戻せません。"
         }
-        return "このグループを削除します。元には戻せません。"
+        return "このフォルダを削除します。元には戻せません。"
     }
 
     private func performDelete() {

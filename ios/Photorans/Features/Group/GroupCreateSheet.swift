@@ -17,7 +17,7 @@ struct GroupCreateSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("グループ名", text: $name)
+                    TextField("フォルダ名", text: $name)
                         .focused($isNameFocused)
                         .submitLabel(.done)
                         .onSubmit { attemptCreate() }
@@ -29,7 +29,7 @@ struct GroupCreateSheet: View {
                     }
                 }
             }
-            .navigationTitle("新しいグループ")
+            .navigationTitle("新しいフォルダ")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

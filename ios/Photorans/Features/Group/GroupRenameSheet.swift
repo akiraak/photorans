@@ -16,13 +16,13 @@ struct GroupRenameSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("グループ名", text: $name)
+                    TextField("フォルダ名", text: $name)
                         .focused($isNameFocused)
                         .submitLabel(.done)
                         .onSubmit { attemptRename() }
                 }
             }
-            .navigationTitle("グループ名を編集")
+            .navigationTitle("フォルダ名を編集")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

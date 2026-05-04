@@ -44,7 +44,7 @@ struct HomeFAB: View {
                 .background(Color.secondary, in: Circle())
                 .shadow(color: .black.opacity(0.25), radius: 4, y: 2)
         }
-        .accessibilityLabel("グループを作成")
+        .accessibilityLabel("フォルダを作成")
     }
 
     private var cameraButton: some View {

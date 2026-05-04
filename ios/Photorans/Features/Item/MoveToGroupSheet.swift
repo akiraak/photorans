@@ -33,7 +33,7 @@ struct MoveToGroupSheet: View {
                 }
 
                 if !allGroups.isEmpty {
-                    Section("グループ") {
+                    Section("フォルダ") {
                         ForEach(allGroups, id: \.id) { group in
                             Button {
                                 move(to: group)
@@ -44,7 +44,7 @@ struct MoveToGroupSheet: View {
                     }
                 }
             }
-            .navigationTitle("グループへ移動")
+            .navigationTitle("フォルダへ移動")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
