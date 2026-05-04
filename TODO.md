@@ -1,16 +1,22 @@
 # TODO
 
+- [ ] カメラを横にしたときに倍率表示の文字を横に回転する [plan](docs/plans/camera-hud-rotation.md)
+  - [ ] Phase1 HUD 文字回転実装
+    - [ ] Step1-1 `CameraView.zoomHUD` の `Text` に `.rotationEffect(zoomHUDRotation)` と `.animation(.easeInOut(duration: 0.2), value: viewModel.lastValidRotationAngle)` を追加
+    - [ ] Step1-2 `zoomHUDRotation` computed property を CameraView に追加
+    - [ ] Step1-3 コードレビュー (WSL2 ではビルド不可)
+  - [ ] Phase2 実機確認 (タグ push → Bitrise → TestFlight、Akira さん事前確認)
+  - [ ] Phase3 仕上げ (TODO → DONE 移送、plan を archive へ)
 - [ ] 翻訳中アニメーションの変更
-- [ ] OCRモデルと翻訳モデルを切り替え可能に
-  - [ ] 管理画面でモデル別の料金比較ができるように
-  - [ ] 管理画面で１アイテムごとの平均料金を表示
-- [ ] 検索 UI を再導入する (パンくず実装で一旦削除した分。仕様: Item は scope 無視で全 `.completed` 横断 / Group は scope 配下子孫の名前 contains。`SegmentQueryTests` 末尾の仕様コメントブロックを参照)
-- [ ] カメラを横にしたときに倍率表示の文字を横に回転する
 - [ ] グループの中に入った場合の空だった時の表示を「翻訳作成するかグループを作成するか」のテキストに変える
       グループのルート: 今までと同じ
       グループ内のグループ（English > Store）: 「翻訳作成するかグループを作成するか」
 - [ ] グループをフォルダという名称に変更
+- [ ] 日->英, 英->日の両方向の翻訳対応
+- [ ] OCRモデルと翻訳モデルを切り替え可能に
+  - [ ] 管理画面でモデル別の料金比較ができるように
+  - [ ] 管理画面で１アイテムごとの平均料金を表示
+- [ ] 検索 UI を再導入する (パンくず実装で一旦削除した分。仕様: Item は scope 無視で全 `.completed` 横断 / Group は scope 配下子孫の名前 contains。`SegmentQueryTests` 末尾の仕様コメントブロックを参照)
 - [ ] プライバシーの観点からサーバ側で画像、OCRテキスト、翻訳テキストを保持しない
       - 最適なAIモデルを選択するために画像ファイルサイズ、OCRテキスト文字数、翻訳テキスト文字数を保持する
-- [ ] 日->英, 英->日の両方向の翻訳対応
 - [ ] 管理画面の改善

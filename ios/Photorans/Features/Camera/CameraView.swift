@@ -94,6 +94,7 @@ struct CameraView: View {
 
     /// preview 上部に常設する倍率 HUD。ピンチ中は強調 (1.0)、それ以外は控えめ (0.6)。
     /// 仮想デバイスは `displayZoomLabel` 側で `factor / 2` 換算済み (純正カメラ風表記)。
+    /// UI は portrait 固定だが、文字だけ端末向きに合わせて回す (純正カメラ準拠)。
     private var zoomHUD: some View {
         Capsule()
             .fill(.black.opacity(0.5))
@@ -101,12 +102,25 @@ struct CameraView: View {
                 Text(viewModel.displayZoomLabel)
                     .font(.caption)
                     .foregroundStyle(.white)
+                    .rotationEffect(zoomHUDRotation)
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.lastValidRotationAngle)
             )
             .frame(width: 56, height: 28)
             .opacity(viewModel.isPinching ? 1.0 : 0.6)
             .animation(.easeOut(duration: 0.2), value: viewModel.isPinching)
             .padding(.top, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    /// `lastValidRotationAngle` (capture connection 用、sensor → world) を SwiftUI ビューの
+    /// `.rotationEffect` (画面ローカル → 世界向き) に写像する。`portraitUpsideDown` /
+    /// `faceUp` / `faceDown` / `unknown` は ViewModel 側で直前値維持されるのでここでは扱わない。
+    private var zoomHUDRotation: Angle {
+        switch viewModel.lastValidRotationAngle {
+        case 0: return .degrees(90)     // landscapeLeft
+        case 180: return .degrees(-90)  // landscapeRight
+        default: return .degrees(0)     // portrait + 直前値維持
+        }
     }
 
     private var controlsSection: some View {
