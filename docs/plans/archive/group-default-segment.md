@@ -50,13 +50,13 @@ Phase 1 のみ。差分は 10〜15 行程度。
 - [x] **Step 1.1**: `SegmentScope` extension に `var defaultSegment: HomeSegment` を追加
 - [x] **Step 1.2**: `HomeView` に明示的な `init` を追加し `_selectedSegment = State(initialValue: scope.defaultSegment)` で初期値を scope ベースに設定 (既存の名前付き引数の構造は維持)
 - [x] **Step 1.3**: `HomeView` 冒頭ドキュメントコメントを「Root → 未分類 / Group → グループ」に書き換え (旧コメント「Group 詳細でも初期値は `未分類` 統一で揃える」を更新)
-- [ ] **Step 1.4**: Akira さん確認の上で `git tag -a v0.1.X` を作成 + push (Bitrise release 起動 → TestFlight 配信)
-- [ ] **Step 1.5**: Akira さん実機確認結果共有待ち。確認項目:
+- [x] **Step 1.4**: Akira さん確認の上で `git tag -a v0.1.X` を作成 + push (Bitrise release 起動 → TestFlight 配信) — v0.1.20 push 済
+- [x] **Step 1.5**: Akira さん実機確認 OK (2026-05-03 / v0.1.20)。確認項目:
   - アプリ起動直後 (Root) は `未分類` タブで開くこと (リグレッション無し)
   - Root → グループタブ → 子グループタップ → 子グループ画面が `グループ` タブで開くこと (本変更の挙動)
   - 子 → 孫タップ → 孫も `グループ` タブで開くこと
   - 任意の Group 詳細でタブを `未分類` に切替 → 戻る → 親グループのタブ状態が維持されていること (NavigationStack の destination 保持を確認)
-- [ ] **Step 1.6**: OK なら `TODO.md` の該当項目を `DONE.md` へ移送、本プランファイルを `docs/plans/archive/` へ移動
+- [x] **Step 1.6**: `TODO.md` の該当項目を `DONE.md` へ移送、本プランファイルを `docs/plans/archive/` へ移動
 
 ## テスト方針
 
