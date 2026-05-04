@@ -42,10 +42,10 @@ open Photorans.xcodeproj
 
 WSL2 上では `xcodebuild` は走らせられないため、ビルド・実機確認は Bitrise (`bitrise.yml` の `primary` Workflow) を介して行う。
 
-| Configuration | `API_BASE_URL`             |
-| ------------- | -------------------------- |
-| Debug         | http://10.0.1.137:3000     |
-| Release       | https://photorans.chobi.me |
+| Configuration | `API_BASE_URL`                                          |
+| ------------- | ------------------------------------------------------- |
+| Debug         | http://10.0.1.137:3000                                  |
+| Release       | https://synergistic-wilburn-overclean.ngrok-free.dev    |
 
 `API_BASE_URL` は `project.yml` の Build Setting で定義し、`Info.plist` で `$(API_BASE_URL)` 参照する。アプリからは `Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL")` で取得する。
 
