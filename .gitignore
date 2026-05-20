@@ -25,4 +25,6 @@ ios/*.dSYM.zip
 # Xcode のユーザ固有設定
 ios/Photorans.xcodeproj/xcuserdata/
 ios/Photorans.xcodeproj/project.xcworkspace/xcuserdata/
+# URL_SECRET 等の secret は untracked。CI は bitrise.yml の script step で生成
+ios/Config/Secrets.xcconfig
 .DS_Store
