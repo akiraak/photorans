@@ -23,6 +23,12 @@
       - 最適なAIモデルを選択するために画像ファイルサイズ、OCRテキスト文字数、翻訳テキスト文字数を保持する
 - [ ] 管理画面の改善
 
-- [ ] アプリの接続先を変更する。XXXXXXXXXXXXは変更する
+- [ ] アプリの接続先を変更する (iOS native の `API_BASE_URL` に secret prefix 反映 + 本番ホスト切替) ([plan](docs/plans/app-url-secret-prefix.md))
       https://photorans.chobi.me/XXXXXXXXXXXX/
       https://photorans.chobi.me/XXXXXXXXXXXX/admin
+  - [ ] Phase1: xcconfig 構造追加 (Debug/Release/Secrets.sample, .gitignore)
+  - [ ] Phase2: project.yml 改修 + xcodegen 再生成 (既存 `API_BASE_URL` build setting 削除 → configFiles 化)
+  - [ ] Phase3: ローカル動作確認 (server + Debug ビルド疎通)
+  - [ ] Phase4: Bitrise CI 対応 (Workspace Secret 登録 + bitrise.yml script step 追加)
+  - [ ] Phase5: 実機確認 (タグ push → TestFlight → 撮影フロー + admin 確認)
+  - [ ] Phase6: ドキュメント更新 + DONE 移送
