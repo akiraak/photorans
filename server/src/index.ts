@@ -11,9 +11,17 @@ import {
 } from './history.js';
 import { calculateCost } from './pricing.js';
 
-const app = new Hono();
+const URL_SECRET = process.env.URL_SECRET;
+if (!URL_SECRET || URL_SECRET.length < 16 || !/^[A-Za-z0-9_-]+$/.test(URL_SECRET)) {
+  console.error(
+    'URL_SECRET is required (>=16 chars, [A-Za-z0-9_-] only). aborting to prevent unintended public exposure.',
+  );
+  process.exit(1);
+}
 
-app.get('/', (c) => c.text('photorans server: hello'));
+const api = new Hono();
+
+api.get('/', (c) => c.text('photorans server: hello'));
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MODEL_ID = 'claude-sonnet-4-6';
@@ -26,7 +34,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('warning: ANTHROPIC_API_KEY is not set; /translate calls will fail');
 }
 
-app.post('/translate', async (c) => {
+api.post('/translate', async (c) => {
   let body: Record<string, string | File>;
   try {
     body = await c.req.parseBody();
@@ -322,7 +330,7 @@ function renderListPage(records: HistoryRecord[]): string {
       const direction = escapeHtml(languageBadge(r.sourceLanguage, r.targetLanguage));
       return `
         <tr>
-          <td><a href="/admin/${encodeURIComponent(r.id)}">${created}</a></td>
+          <td><a href="admin/${encodeURIComponent(r.id)}">${created}</a></td>
           <td class="preview">${original || '<span class="empty">(空)</span>'}</td>
           <td class="preview">${translated || '<span class="empty">(空)</span>'}</td>
           <td>${direction}</td>
@@ -395,7 +403,7 @@ function renderDetailPage(r: HistoryRecord): string {
   <style>${ADMIN_STYLE}</style>
 </head>
 <body>
-  <a class="back" href="/admin">← 一覧に戻る</a>
+  <a class="back" href="../admin">← 一覧に戻る</a>
   <h1>履歴詳細</h1>
   <div class="meta">
     ID: ${escapeHtml(r.id)} ／ 作成日時: ${escapeHtml(r.createdAt)} ／ モデル: ${escapeHtml(r.model)} ／ 方向: ${escapeHtml(directionLabel)}
@@ -406,7 +414,7 @@ function renderDetailPage(r: HistoryRecord): string {
   </div>
   <div class="detail">
     <div>
-      <img src="/admin/${encodeURIComponent(r.id)}/image" alt="撮影画像">
+      <img src="${encodeURIComponent(r.id)}/image" alt="撮影画像">
     </div>
     <div>
       <h2>原文 (${escapeHtml(sourceLabel)})</h2>
@@ -419,12 +427,12 @@ function renderDetailPage(r: HistoryRecord): string {
 </html>`;
 }
 
-app.get('/admin', (c) => {
+api.get('/admin', (c) => {
   const records = listHistory();
   return c.html(renderListPage(records));
 });
 
-app.get('/admin/:id', (c) => {
+api.get('/admin/:id', (c) => {
   const id = c.req.param('id');
   if (!UUID_RE.test(id)) {
     return c.text('not found', 404);
@@ -436,7 +444,7 @@ app.get('/admin/:id', (c) => {
   return c.html(renderDetailPage(record));
 });
 
-app.get('/admin/:id/image', (c) => {
+api.get('/admin/:id/image', (c) => {
   const id = c.req.param('id');
   if (!UUID_RE.test(id)) {
     return c.text('not found', 404);
@@ -456,6 +464,9 @@ app.get('/admin/:id/image', (c) => {
   c.header('Cache-Control', 'private, max-age=3600');
   return c.body(new Uint8Array(bytes));
 });
+
+const app = new Hono();
+app.route(`/${URL_SECRET}`, api);
 
 const port = Number(process.env.PORT ?? 3000);
 
