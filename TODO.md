@@ -35,7 +35,7 @@
 
 - [ ] Expo 使わずに Mac のみで運用できるようにする ([plan](docs/plans/mac-only-workflow.md))
   - [x] Phase1: `client/` 関連の完全削除 (client/, client-dev.sh, .gitignore 整理)
-  - [ ] Phase2: `server.sh` の Mac 互換化 (`fuser` → `lsof` ベース)
+  - [x] Phase2: `server.sh` の Mac 互換化 (`fuser` → `lsof` ベース)
   - [ ] Phase3: Mac 開発環境セットアップ (brew + xcodegen + 署名 + Secrets.xcconfig)
   - [ ] Phase4: ローカルビルド検証 (simulator + 実機 USB Run)
   - [ ] Phase5: ドキュメント刷新 (ios/README.md, CLAUDE.md, README.md)
