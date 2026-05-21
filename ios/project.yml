@@ -21,7 +21,7 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
   configs:
     Debug:
-      API_BASE_URL: http://10.0.1.137:3000
+      API_BASE_URL: http://10.0.1.221:3000
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
     Release:
       API_BASE_URL: https://synergistic-wilburn-overclean.ngrok-free.dev
