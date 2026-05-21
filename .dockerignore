@@ -5,8 +5,7 @@ server/data/
 server/.env
 server/.env.local
 
-# 本サーバビルドに不要なクライアント・周辺コード
-client/
+# 本サーバビルドに不要な周辺コード
 ios/
 vibeboard/
 debug-ss/
