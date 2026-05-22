@@ -27,8 +27,8 @@ workflows:
       リポジトリにコミット済みの ios/Photorans.xcodeproj を使い、
       iOS シミュレータ向けに未署名ビルドする (generic destination)。
       アーカイブ・署名は行わない (release Workflow が担当)。
-      .xcodeproj は WSL2 上の XcodeGen Linux ビルドで再生成する想定で、
-      CI 側では生成ステップを持たない。
+      .xcodeproj は Mac で `brew install xcodegen` → `xcodegen generate`
+      により再生成し commit する。CI 側では生成ステップを持たない。
     steps:
     - git-clone@8: {}
     - xcode-build-for-simulator@3:
