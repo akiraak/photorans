@@ -7,6 +7,9 @@ server/data/
 server/.env
 server/.env.local
 
+# client (.env・.expo・node_modules のみのローカル生成物)
+client/
+
 # debug / sample images (端末固有)
 debug-ss/
 
